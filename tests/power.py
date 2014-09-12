@@ -1,24 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-sys.path.append(os.path.pardir)
-
-from cpmoptimize import cpmoptimize
-
+import core
 
 base = 78
 
-def raw_power(n):
+def naive(n):
     res = 1
     for i in xrange(n):
         res *= base
     return res
 
-cpm_power = cpmoptimize(strict=True, iters_limit=0)(raw_power)
-
-def optimal_power(n):
+def binary_exp(n):
+    """Binary exponentiation algorithm"""
+    
     cur = base
     res = 1
     if not n:
@@ -31,24 +26,18 @@ def optimal_power(n):
         cur *= cur
         n >>= 1
 
-def built_in_power(n):
+def built_in(n):
     return base ** n
 
-
 if __name__ == '__main__':
-    import core
-
     core.run(
         'power', None,
-        [
-            ('raw', raw_power),
-            ('cpm', cpm_power),
-            ('optimal', optimal_power),
-            ('built-in', built_in_power),
+        core.optimized(naive) + [
+            ('binary', binary_exp),
+            ('built-in', built_in),
         ],
         [
-            ('small', 'linear', core.linear_scale(10000, 25)),
-            ('big', None, core.linear_scale(200000, 10)),
+            ('small', None, core.linear_scale(10000, 25)),
+            ('big', 'linear', core.linear_scale(200000, 10)),
         ],
-        True, True,
     )

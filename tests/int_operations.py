@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-sys.path.append(os.path.pardir)
-
-from cpmoptimize import cpmoptimize
-
+import core
 
 # Some global constant
 global_const = 4
 
-def raw_int_opers(n):
+def naive(n):
     # Definition of using some global variable
     global global_var
     
@@ -96,37 +91,11 @@ def raw_int_opers(n):
     # Return ordered list with values of all local variables
     return tuple(sorted(locals().items(), key=lambda item: item[0]))
 
-cpm_int_opers_no_mc = cpmoptimize(
-    strict=True, iters_limit=0,
-    opt_min_rows=False, opt_clear_stack=False,
-)(raw_int_opers)
-cpm_int_opers_no_m = cpmoptimize(
-    strict=True, iters_limit=0,
-    opt_min_rows=False,
-)(raw_int_opers)
-cpm_int_opers_no_c = cpmoptimize(
-    strict=True, iters_limit=0,
-    opt_clear_stack=False,
-)(raw_int_opers)
-cpm_int_opers = cpmoptimize(
-    strict=True, iters_limit=0,
-)(raw_int_opers)
-
-
 if __name__ == '__main__':
-    import core
-
     core.run(
-        'int_opers', None,
-        [
-            ('raw', raw_int_opers),
-            ('cpm -mc', cpm_int_opers_no_mc),
-            ('cpm -m', cpm_int_opers_no_m),
-            ('cpm -c', cpm_int_opers_no_c),
-            ('cpm', cpm_int_opers),
-        ],
+        'int_operations', None,
+        core.optimized(naive),
         [
             ('linear', 'linear', core.linear_scale(500000, 25)),
         ],
-        True, True,
     )

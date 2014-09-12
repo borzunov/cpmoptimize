@@ -1,54 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-sys.path.append(os.path.pardir)
-
-from cpmoptimize import cpmoptimize
-
+import core
 
 start = 3
 coeff = 5
 
-def raw_geom_sum(n):
+def naive(count):
     elem = start
     res = 0
-    for i in xrange(n):
+    for i in xrange(count):
         res += elem
         elem *= coeff
     return res
 
-cpm_geom_sum = cpmoptimize(strict=True, iters_limit=0)(raw_geom_sum)
-
-def _optimal_geom_sum(first, count):
+def _optimal(first, count):
     # Returns (sum, coeff ** count)
     
     if count & 1:
-        sub_sum, sub_pow = _optimal_geom_sum(first, count - 1)
+        sub_sum, sub_pow = _optimal(first, count - 1)
         return first + sub_sum * coeff, sub_pow * coeff
     if not count:
         return 0, 1
-    sub_sum, sub_pow = _optimal_geom_sum(first, count >> 1)
+    sub_sum, sub_pow = _optimal(first, count >> 1)
     return sub_sum * (1 + sub_pow), sub_pow * sub_pow
 
-def optimal_geom_sum(count):
-    return _optimal_geom_sum(start, count)[0]
-
+def optimal(count):
+    """Optimal algorithm based on the idea similar to the binary
+    exponentiation."""
+    
+    return _optimal(start, count)[0]
 
 if __name__ == '__main__':
-    import core
-
     core.run(
         'geom_sum', None,
-        [
-            ('raw', raw_geom_sum),
-            ('cpm', cpm_geom_sum),
-            ('optimal', optimal_geom_sum),
+        core.optimized(naive) + [
+            ('optimal', optimal),
         ],
         [
-            ('small', 'linear', core.linear_scale(10000, 25)),
-            ('big', None, core.linear_scale(200000, 10)),
+            ('small', None, core.linear_scale(10000, 25)),
+            ('big', 'linear', core.linear_scale(200000, 10)),
         ],
-        True, True,
     )

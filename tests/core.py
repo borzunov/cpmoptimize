@@ -6,6 +6,9 @@ import os
 import sys
 from time import time
 
+sys.path.append(os.path.pardir)
+from cpmoptimize import cpmoptimize
+
 
 # Functions for making plots
 
@@ -199,7 +202,7 @@ def log_scale(max_value, count):
 # Table's columns widths
 arg_col_width = 6
 control_col_width = 8
-compared_col_width = 14
+compared_col_width = 12
 compare_comment_width = 8
 match_col_width = 5
 
@@ -207,7 +210,7 @@ match_col_width = 5
 # execution time of different implementations will not be executed
 compare_arg_border = 0
 
-def run(name, comment, functions, cases, exec_compare, draw_plot):
+def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
     if draw_plot:
         init_plots()
         print
@@ -220,7 +223,7 @@ def run(name, comment, functions, cases, exec_compare, draw_plot):
     methods = []
     for index, (desc, func) in enumerate(functions):
         width = compared_col_width if index else control_col_width
-        cols.append(('%s time' % desc, width))
+        cols.append(('%s, s' % desc, width))
         methods.append([desc, func, None])
     cols.append(('match', match_col_width))
     
@@ -243,7 +246,7 @@ def run(name, comment, functions, cases, exec_compare, draw_plot):
             data_set = set()
             for method_desc, func, measures in methods:
                 cur_time, data = measure_time(func, arg)
-                cell = '%.2lf s' % cur_time
+                cell = '%.2lf' % cur_time
                 if exec_compare and prev_time is not None:
                     if arg > compare_arg_border:
                         ratio = float(prev_time) / cur_time
@@ -266,3 +269,35 @@ def run(name, comment, functions, cases, exec_compare, draw_plot):
                 title, arguments, methods, plot_type,
             )
             print
+
+
+# Functions for generate optimized variants of naive methods
+
+def apply_options(settings, naive_func, clear_stack, min_rows):
+    name = 'cpm'
+    if not clear_stack or not min_rows:
+        name += ' -'
+    if not clear_stack:
+        name += 'c'
+    if not min_rows:
+        name += 'm'
+    
+    return (name, cpmoptimize(
+        opt_clear_stack=clear_stack, opt_min_rows=min_rows, **settings
+    )(naive_func))
+
+def optimized(naive_func, try_options=False, disable_limit=False):
+    settings = {'strict': True}
+    if not disable_limit:
+        settings['iters_limit'] = 0
+    functions = [
+        ('naive', naive_func),
+    ]
+    if try_options:
+        functions += [
+            apply_options(settings, naive_func, False, False),
+            apply_options(settings, naive_func, False, True),
+            apply_options(settings, naive_func, True, False),
+        ]
+    functions.append(apply_options(settings, naive_func, True, True))
+    return functions
