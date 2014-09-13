@@ -7,6 +7,8 @@ setup(
     name = "cpmoptimize",
     version = "0.1",
     packages = find_packages(),
+    
+    install_requires = ['byteplay>=0.2'],
 
     author = "Alexander Borzunov",
     author_email = "hxrussia@gmail.com",
