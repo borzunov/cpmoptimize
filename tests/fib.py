@@ -42,6 +42,7 @@ def fast_doubling(n):
     return _fast_doubling(n)[0]
 
 if __name__ == '__main__':
+    # Test all functions on different testcases
     core.run(
         'fib', None,
         core.optimized(naive) + [
@@ -52,4 +53,21 @@ if __name__ == '__main__':
             ('small', 'linear', core.linear_scale(30000, 15)),
             ('big', 'linear', core.linear_scale(300000, 15)),
         ],
+    )
+    
+    # Test optimized function with different settings
+    core.run(
+        'fib', None,
+        core.optimized(naive),
+        [('demo', 'linear', core.linear_scale(60000, 30))],
+    )
+    core.run(
+        'fib', None,
+        core.optimized(naive, iters_limit=10000),
+        [('border', 'linear', core.linear_scale(60000, 30))],
+    )
+    core.run(
+        'fib', None,
+        core.optimized(naive, try_options=True),
+        [('options', 'linear', core.linear_scale(120000, 30))],
     )
