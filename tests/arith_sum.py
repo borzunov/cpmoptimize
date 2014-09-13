@@ -26,7 +26,7 @@ if __name__ == '__main__':
             ('formula', formula),
         ],
         [
-            ('linear', None, core.linear_scale(500000, 10)),
+            ('linear', None, core.linear_scale(600000, 5)),
         ],
         exec_compare=False, draw_plot=False,
     )
@@ -37,7 +37,7 @@ if __name__ == '__main__':
             ('formula', pow10_wrapper(formula)),
         ],
         [
-            ('exp', None, core.linear_scale(10000, 10)),
+            ('exp', None, core.linear_scale(10000, 5)),
         ],
         exec_compare=False, draw_plot=False,
     )

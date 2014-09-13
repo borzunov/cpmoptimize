@@ -49,7 +49,7 @@ if __name__ == '__main__':
             ('fast dbl', fast_doubling),
         ],
         [
-            ('small', 'linear', core.linear_scale(20000, 25)),
-            ('big', 'linear', core.linear_scale(500000, 10)),
+            ('small', 'linear', core.linear_scale(30000, 15)),
+            ('big', 'linear', core.linear_scale(300000, 15)),
         ],
     )

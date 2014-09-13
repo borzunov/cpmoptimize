@@ -38,7 +38,6 @@ if __name__ == '__main__':
             ('optimal', optimal),
         ],
         [
-            ('small', None, core.linear_scale(10000, 25)),
-            ('big', 'linear', core.linear_scale(200000, 10)),
+            (None, 'linear', core.linear_scale(10000, 15)),
         ],
     )

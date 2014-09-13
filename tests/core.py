@@ -228,7 +228,8 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
     cols.append(('match', match_col_width))
     
     for case_desc, plot_type, arguments in cases:
-        print '(*) Testcase "%s":' % case_desc
+        if case_desc is not None:
+            print '(*) Testcase "%s":' % case_desc
         
         # Clear previous measures
         for method in methods:
@@ -264,8 +265,9 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
         table.footer()
 
         if draw_plot and plot_type is not None:
+            suffix = '' if case_desc is None else '_' + case_desc
             make_plot(
-                '%s_%s.png' % (name, case_desc),
+                '%s%s.png' % (name, suffix),
                 title, arguments, methods, plot_type,
             )
             print
@@ -286,10 +288,8 @@ def apply_options(settings, naive_func, clear_stack, min_rows):
         opt_clear_stack=clear_stack, opt_min_rows=min_rows, **settings
     )(naive_func))
 
-def optimized(naive_func, try_options=False, disable_limit=False):
-    settings = {'strict': True}
-    if not disable_limit:
-        settings['iters_limit'] = 0
+def optimized(naive_func, iters_limit=0, try_options=False):
+    settings = {'strict': True, 'iters_limit': iters_limit}
     functions = [
         ('naive', naive_func),
     ]

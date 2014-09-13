@@ -96,6 +96,6 @@ if __name__ == '__main__':
         'int_operations', None,
         core.optimized(naive),
         [
-            ('linear', 'linear', core.linear_scale(500000, 25)),
+            (None, 'linear', core.linear_scale(600000, 15)),
         ],
     )
