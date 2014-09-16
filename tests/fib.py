@@ -13,7 +13,7 @@ def naive(n):
         a, b = b, a + b
     return a
 
-def classic_matrixes(n):
+def classic_matrices(n):
     """Implementation via explicit fast matrix exponentiation"""
     
     if not n:
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     core.run(
         'fib', None,
         core.optimized(naive) + [
-            ('matrixes', classic_matrixes),
+            ('matrices', classic_matrices),
             ('fast dbl', fast_doubling),
         ],
         [
