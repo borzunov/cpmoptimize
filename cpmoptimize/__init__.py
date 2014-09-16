@@ -22,7 +22,7 @@ def analyze_loop(settings, code, index):
         return 0
     # Now we found GET_ITER and FOR_ITER instructions
     
-    # Try to found SETUP_LOOP
+    # Try to find SETUP_LOOP
     for rel_index in orig_xrange(index - 3, -1, -1):
         if code[rel_index][0] == byteplay.SETUP_LOOP:
             setup_index = rel_index
@@ -30,8 +30,7 @@ def analyze_loop(settings, code, index):
     else:
         return 0
     
-    # Try to found JUMP_ABSOLUTE and POP_BLOCK
-    # by label from FOR_ITER
+    # Try to find JUMP_ABSOLUTE and POP_BLOCK by label from FOR_ITER
     pop_block_label = instr[1]
     for rel_index in orig_xrange(index + 1, len(code) - 1):
         if code[rel_index][0] is pop_block_label:
@@ -48,12 +47,20 @@ def analyze_loop(settings, code, index):
     # It's busy to check POP_BLOCK instruction existence to
     # distinguish real for-loops from a list comprehensions
     
+    # Try to find marker of current line's number
+    for rel_index in orig_xrange(setup_index - 1, -1, -1):
+        if code[rel_index][0] == byteplay.SetLineno:
+            head_lineno = code[rel_index][1]
+            break
+    else:
+        head_lineno = None
+    
     head = code[setup_index + 1:index - 2]
     body = code[index + 1:pop_block_index - 2]
     # Don't forget that "else_body" loop part is also exists
     
     try:
-        state = recompiler.recompile_body(settings, body)
+        state = recompiler.recompile_body(settings, head_lineno, body)
     except recompiler.RecompileError as err:
         if settings['strict']:
             raise err
@@ -92,6 +99,7 @@ def cpmoptimize(
         settings[key] = locals()[key]
     
     def upgrade_func(func):
+        settings['repr'] = repr(func)
         internals = byteplay.Code.from_code(func.func_code)
         code = internals.code
         

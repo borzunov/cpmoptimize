@@ -80,8 +80,7 @@ class CPMRange(object):
 def check_iterable(settings, iterable):
     if not isinstance(iterable, (xrange, CPMRange)):
         raise TypeError(
-            'Iterator in optimized loops must have type ' +
-            '"xrange" instead of %s' % type(iterable)
+            'Iterator has type %s instead of type "xrange"' % type(iterable)
         )
     
     iters_count = iterable.__len__()
@@ -167,6 +166,7 @@ def exec_loop(
         ) + [1]
     except TypeError as err:
         if settings['strict']:
+            err.message = "Can't run optimized loop: " + err.message
             raise err
         else:
             return None

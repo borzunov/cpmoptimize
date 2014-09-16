@@ -8,15 +8,26 @@ from matcode import *
 
 
 class RecompileError(Exception):
-    pass
+    def __init__(self, message, state):
+        self.message = message
+        self.state = state
+    
+    def __str__(self):
+        desc = self.message
+        if self.state.lineno is not None:
+            desc += ' at line %s in %s' % (
+                self.state.lineno, self.state.settings['repr'],
+            )
+        return "Can't optimize loop: " + desc
 
-class UnpredictArgsError(RecompileError):
+class UnpredictArgsError(Exception):
     pass
 
 
 class RecompilerState(object):
-    def __init__(self, settings):
+    def __init__(self, settings, head_lineno):
         self._settings = settings
+        self.lineno = head_lineno
         
         self.stack = []
         self._content = []
@@ -233,9 +244,9 @@ def handle_binary_multiply(state, instr):
         
         state.stack.pop()
     else:
-        raise RecompileError(
+        raise RecompileError((
             'Multiplication of two unpredictable values is unsupported'
-        )
+        ), state)
         
 def handle_binary_add(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
@@ -315,9 +326,11 @@ def handle_binary_const(state, instr):
 def handle_load_const(state, instr):
     arg = instr[1]
     if not isinstance(arg, state.settings['types']):
-        raise RecompileError(
-            "Constant %s has unallowed type" % repr(arg)
-        )
+        allowed_types = ', '.join(map(repr, state.settings['types']))
+        raise RecompileError((
+            'Constant %s has unallowed type %s instead of ' +
+            'one of allowed types: %s'
+        ) % (repr(arg), type(arg), allowed_types), state)
     state.stack.append([instr])
 
 def handle_load_var(state, instr):
@@ -441,9 +454,9 @@ def browse_counter(state, body):
         if not mutation:
             raise KeyError
     except KeyError:
-        raise RecompileError(
-            'Unsupported iterator usage in instruction: %s' % instr
-        )
+        raise RecompileError((
+            'Unsupported iterator usage in instruction %s' % repr(instr)
+        ), state)
     load_instr = vars_opers_map[arg_type][0], name
     
     if state.settings['opt_min_rows']:
@@ -461,8 +474,8 @@ def browse_counter(state, body):
         status = 'w'
     return (arg_type, name), status, body[1:]
 
-def recompile_body(settings, body):
-    state = RecompilerState(settings)
+def recompile_body(settings, head_lineno, body):
+    state = RecompilerState(settings, head_lineno)
 
     elem_straight, counter_status, rem_body = browse_counter(
         state, body,
@@ -504,23 +517,24 @@ def recompile_body(settings, body):
     for instr in rem_body:
         oper = instr[0]
         if oper == byteplay.SetLineno:
+            state.lineno = instr[1]
             continue
             
         try:
             supported_opers[oper](state, instr)
         except UnpredictArgsError:
-            raise UnpredictArgsError((
+            raise RecompileError((
                 'All operands of instruction %s must be a constant ' +
                 'or must have a predictable value'
-            ) % oper)
+            ) % oper, state)
         except IndexError:
-            raise RecompileError(
-                'Unsupported loops or invalid stack usage in bytecode'
-            )
+            raise RecompileError((
+                'Unsupported loop type or invalid stack usage in bytecode'
+            ), state)
         except KeyError:
             raise RecompileError((
-                "Can't optimize code with instruction %s"
-            ) % oper)
+                'Unsupported instruction %s'
+            ) % repr(instr), state)
     
     if counter_status != 'n':
         state.append(
