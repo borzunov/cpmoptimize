@@ -6,6 +6,7 @@ from types import FunctionType
 import byteplay
 
 import hook
+import profiler
 import recompiler
 
 
@@ -59,17 +60,18 @@ def analyze_loop(settings, code, index):
     body = code[index + 1:pop_block_index - 2]
     # Don't forget that "else_body" loop part is also exists
     
+    settings['head_lineno'] = head_lineno
     try:
-        state = recompiler.recompile_body(settings, head_lineno, body)
+        state = recompiler.recompile_body(settings, body)
     except recompiler.RecompileError as err:
-        if settings['strict']:
-            raise err
-        else:
-            return 0
+        profiler.exc(settings, 'Recompilation failed', err)
+        return 0
     
     # Insert head_handler right before GET_ITER instruction
     head_hook = hook.create_head_hook(state, pop_block_label)
     code[index - 2:index - 2] = head_hook
+    
+    profiler.note(settings, 'Recompiled')
     
     # Return length of analyzed code
     return len(head_hook)
@@ -89,12 +91,13 @@ min_iters_limit = 2
 def cpmoptimize(
     strict=False, iters_limit=default_iters_limit, types=default_types,
     opt_min_rows=True, opt_clear_stack=True,
+    verbose=None,
 ):
     iters_limit = max(iters_limit, min_iters_limit)
     settings = {}
     for key in (
         'strict', 'iters_limit', 'types',
-        'opt_min_rows', 'opt_clear_stack',
+        'opt_min_rows', 'opt_clear_stack', 'verbose',
     ):
         settings[key] = locals()[key]
     

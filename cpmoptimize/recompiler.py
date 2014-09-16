@@ -25,9 +25,9 @@ class UnpredictArgsError(Exception):
 
 
 class RecompilerState(object):
-    def __init__(self, settings, head_lineno):
+    def __init__(self, settings):
         self._settings = settings
-        self.lineno = head_lineno
+        self.lineno = settings['head_lineno']
         
         self.stack = []
         self._content = []
@@ -474,8 +474,8 @@ def browse_counter(state, body):
         status = 'w'
     return (arg_type, name), status, body[1:]
 
-def recompile_body(settings, head_lineno, body):
-    state = RecompilerState(settings, head_lineno)
+def recompile_body(settings, body):
+    state = RecompilerState(settings)
 
     elem_straight, counter_status, rem_body = browse_counter(
         state, body,
