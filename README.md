@@ -118,10 +118,47 @@ Even if loop operates with big numbers (as in the example with the Fibonacci num
 
 ![Comparison of the execution time of function with naive algorithm and automatically optimized function](http://habrastorage.org/files/785/fbe/249/785fbe249f084eda977b853ceb8981a9.png)
 
+Application
+-----------
+
+If decades ago the programmer needs to multiply the variable in the program by 4, he would use no multiplication operation, but its faster equivalent - bit shift to the left by 2. Now compilers are able to do similar optimizations themselves. There are programming languages ​​with a high level of abstraction, new usable technologies and libraries. When writing programs, developers spend more and more of his time to explain to computer *what* program should do (multiply the number by 4), but not *how* to do this effectively (use the bit shift). Thus, now the problem of creating efficient code is partially transferred to the compilers and interpreters.
+
+Currently compilers are able to replace the various operations to the more efficient ones, to predict expressions' values, to delete or swap some parts of the code. But they still can't replace the computation *algorithm*, written by programmer, to the new one with better complexity.
+
+I tried to implement this idea in the described library. If you use it, it's enough to add a single line with the decorator before the function you want to speed up. The decorator optimizes loops if it's possible and never breaks the program, so it can be applied in real projects.
+
+Let's look at one example. There is fast but nontrivial algorithm for calculating Fibonacci numbers, based on the same idea of computing the power of a matrices (you can see its implementation in the sample at "*tests/fib.py*"). An experienced programmer can implement this algorithm in a few minutes. If he don't need to perform the calculations quickly, most likely, he would prefer to save his working time and write a naive and slow algorithm.
+
+Otherwise, if the calculations must work quickly, the programmer has two ways: to write the complex algorithm or to use the automatic optimization (apply the decorator). If *n* is sufficiently large, performance of the program will be similar in both cases, but the programmer will spend less working time in the second case.
+
+In practice, you can also meet the following situation. If the sequence isn't given by known recurrent formula:
+
+![Recurrent formula for Fibonacci numbers](http://habrastorage.org/files/065/f5e/7c1/065f5e7c17e246cf9e2e5b6cfc150ec4.png)
+
+But given by more complicated formula, e.g.:
+
+![Complicated reccurent formula for some sequence](http://habrastorage.org/files/b80/179/c6d/b80179c6d7634c379dabf745265eba89.png)
+
+Then you can't google the corresponding fast algorithm and you should spend some efforts to make it. Nevertheless, you can write naive solution and apply the decorator, then the computer will build a fast algorithm for you itself:
+
+```python
+from cpmoptimize import cpmoptimize
+
+@cpmoptimize()
+def f(n):
+    prev3 = 0
+    prev2 = 1
+    prev1 = 1
+    for i in xrange(3, n + 3):
+        cur = 7 * (2 * prev1 + 3 * prev2) + 4 * prev3 + 5 * i + 6
+        prev3, prev2, prev1 = prev2, prev1, cur
+    return prev3
+```
+
 More Examples
 -------------
 
-You can see the comparison of the execution time with other algorithms for computing Fibonacci numbers and learn more benchmarks in "*tests/*" directory in the project sources. If *matplotlib* is installed on your system, you can also make the corresponding plots.
+You can see the comparison of the execution time with other algorithms for computing Fibonacci numbers and learn more benchmarks in "*tests/*" directory in the project sources. If *matplotlib* is installed on your system, you can also make the corresponding plots (they will be saved to "*tests/plots*" directory).
 
 Library Interface
 -----------------
@@ -183,7 +220,7 @@ Every found loop must satisfy a number of conditions. Some of them are checked a
 
 1. Loop's body must contain only assignment instructions and unary and binary operations, which may be arranged in a complex expressions. It can't contain conditions, function calls, *return* and *yield* operators etc.
 
-2. Operands must satisfy the *predictability* conditions:
+2. Operands must satisfy the *predictability* conditions (their value must be the same at each iteration and mustn't depend on result of any computations in the previous iteration):
 
     * All operands of addition and subtraction and operand of the unary minus can be unpredictable.
     
@@ -318,12 +355,7 @@ The following chart shows the execution time for computing Fibonacci numbers dur
 
 #### Parameter *verbose*
 
-__*verbose*__ option allows you to collect more information about failed and successful optimizations to profile your program and find reasons for which optimizations weren't applied. The parameter is set to *None* by default. To enable the option you should assign to the parameter a stream that will be used for writing debug messages (for example, *sys.stderr*).
-
-Application
------------
-
-...
+Option __*verbose*__ allows you to collect more information about failed and successful optimizations to profile your program and find reasons for which optimizations weren't applied. The parameter is set to *None* by default. To enable the option you should assign to the parameter a stream that will be used for writing debug messages (for example, *sys.stderr*).
 
 What's next?
 ------------
