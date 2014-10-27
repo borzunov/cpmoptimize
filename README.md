@@ -6,9 +6,13 @@ Decorator for automatic algorithms optimization via fast matrix exponentiation
 Installation
 ------------
 
-To install the package, extract it and run:
+You can install the latest version of the library using [pip](https://pip.readthedocs.org/en/latest/):
 
-    python setup.py install
+    sudo pip install git+https://github.com/borzunov/cpmoptimize.git
+
+Or install previously downloaded and extracted package:
+
+    sudo python setup.py install
 
 Dependencies (`byteplay >= 0.2`) will be installed automatically.
 
@@ -121,7 +125,7 @@ Even if loop operates with big numbers (as in the example with the Fibonacci num
 Application
 -----------
 
-If decades ago the programmer needs to multiply the variable in the program by 4, he would use no multiplication operation, but its faster equivalent - bit shift to the left by 2. Now compilers are able to do similar optimizations themselves. There are programming languages ​​with a high level of abstraction, new usable technologies and libraries. When writing programs, developers spend more and more of his time to explain to computer *what* program should do (multiply the number by 4), but not *how* to do this effectively (use the bit shift). Thus, now the problem of creating efficient code is partially transferred to the compilers and interpreters.
+When decades ago a programmer needed to multiply a variable by 4, he didn't use built-in multiplication operator, instead he used its faster equivalent - bit shifting to the left by 2. Nowadays compilers are able to apply such optimizations themselves. In the need of reducing development time new highly abstract languages, new convenient technologies and libraries were developed. Programmers spend more and more time telling computers *what* to do (multiply a variable by 4), not *how* to do it efficiently (use the bit shift). So now creating efficient code is partially the task of compilers and interpreters.
 
 Currently compilers are able to replace the various operations to the more efficient ones, to predict expressions' values, to delete or swap some parts of the code. But they still can't replace the computation *algorithm*, written by programmer, to the new one with better complexity.
 
