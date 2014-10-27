@@ -86,9 +86,9 @@ def check_iterable(settings, iterable):
     
     iters_count = iterable.__len__()
     if iters_count <= settings['iters_limit']:
-        profiler.note(
-            settings, 'Skipped optimization of %s iterations' % iters_count,
-        )
+        if settings['profile']:
+            profiler.note(settings,
+                    'Skipped optimization of %s iterations' % iters_count)
         return None
     
     start = iterable[0]
@@ -170,7 +170,8 @@ def exec_loop(
         ) + [1]
     except TypeError as err:
         err.message = "Can't run optimized loop: " + err.message
-        profiler.exc(settings, "Hook didn't allow optimization", err)
+        if settings['profile']:
+            profiler.exc(settings, "Hook didn't allow optimization", err)
         return None
         
     # Define constant values in matrix code
@@ -184,9 +185,9 @@ def exec_loop(
     # Run matrix code
     vector = run.run_matcode(settings, matcode, vector)
     
-    profiler.success(
-        settings, 'Optimized execution of %s iterations' % iters_count,
-    )
+    if settings['profile']:
+        profiler.success(settings,
+                'Optimized execution of %s iterations' % iters_count)
     
     # Pack real variables' values to a list that will be unpacked in
     # the main function to the values that would be assigned to the
