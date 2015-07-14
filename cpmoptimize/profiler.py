@@ -5,9 +5,11 @@ from time import time
 from traceback import format_exc
 
 def echo(settings, message):
-    settings['verbose'].write('[%.3lf] Loop at line %s in %s:\n%s\n\n' % (
-        time(), settings['head_lineno'], settings['repr'], message,
-    ))
+    stream = settings['verbose']
+    if stream is not None:
+        stream.write('[%.3lf] Loop at line %s in %s:\n%s\n\n' % (
+            time(), settings['head_lineno'], settings['repr'], message,
+        ))
 
 def exc(settings, message, exc):
     if settings['strict']:

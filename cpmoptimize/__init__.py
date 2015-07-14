@@ -64,16 +64,14 @@ def analyze_loop(settings, code, index):
     try:
         state = recompiler.recompile_body(settings, body)
     except recompiler.RecompileError as err:
-        if settings['profile']:
-            profiler.exc(settings, 'Recompilation failed', err)
+        profiler.exc(settings, 'Recompilation failed', err)
         return 0
     
     # Insert head_handler right before GET_ITER instruction
     head_hook = hook.create_head_hook(state, pop_block_label)
     code[index - 2:index - 2] = head_hook
     
-    if settings['profile']:
-        profiler.note(settings, 'Recompilation succeeded')
+    profiler.note(settings, 'Recompiled')
     
     # Return length of analyzed code
     return len(head_hook)
@@ -102,8 +100,6 @@ def cpmoptimize(
         'opt_min_rows', 'opt_clear_stack', 'verbose',
     ):
         settings[key] = locals()[key]
-        
-    settings['profile'] = settings['verbose'] is not None
     
     def upgrade_func(func):
         settings['repr'] = repr(func)
