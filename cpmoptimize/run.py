@@ -7,9 +7,6 @@ from matcode import *
 from matrices import Matrix
 
 
-class MatcodeFoldingError(RuntimeError):
-    pass
-
 class InvalidMatcodeError(RuntimeError):
     pass
 
@@ -48,48 +45,37 @@ matcode_map = {
 
 
 def skip_rows(mat):
-    transposed = mat.transposed()
-    fix_mat = Matrix.identity(mat.rows)
-    unskipped_indexes = []
     need_unit_row = False
-    for x, col in enumerate(transposed.content[:-1]):
-        is_prev_value_used = False
-        for y, elem in enumerate(col[:-1]):
-            # Let's explicity check element's equality to zero
-            # (in theory element can have another type than "int")
-            if elem != 0:
-                if y == x and elem == 1:
-                    # Variable's value depends from previous value
-                    is_prev_value_used = True
-                else:
-                    # Variable's value depends from values of another
-                    # variables or depends from previous value but used
-                    # multiplication
-                    break
-        else:
-            if (
-                # If variable is unchanged
-                (is_prev_value_used and col[-1] == 0) or
-                # Or variable has assigned to constant value
-                not is_prev_value_used
-            ):
-                if not is_prev_value_used:
-                    handle_mov(fix_mat.content, (VAR, x), (VALUE, col[-1]))
-                
-                for index, elem in enumerate(mat.content[x]):
-                    if elem != 0 and index != x:
-                        raise MatcodeFoldingError(
-                            'Folded variable is used in calculations ' +
-                            'of another variables'
-                        )
-                continue
-        
-        unskipped_indexes.append(x)
-        if col[-1] != 0:
-            need_unit_row = True
+    unskipped_indexes = []
+    fix_mat = Matrix.identity(mat.rows)
+    for index in xrange(mat.rows - 1):
+        cur_row = mat.content[index]
+        cur_col = [row[index] for row in mat.content]
+
+        index_can_be_skipped = False
+        prev_value_coeff = cur_col[index]
+        const_coeff = cur_col[-1]
+        # If an original value of a variable isn't used in calculations of
+        # other variables and a new value doesn't depend on other variables
+        if (
+            all(elem == 0 for j, elem in enumerate(cur_row) if j != index) and
+            all(elem == 0 for j, elem in enumerate(cur_col[:-1]) if j != index)
+        ):
+            # If a new variable value is a constant
+            if prev_value_coeff == 0:
+                handle_mov(fix_mat.content, (VAR, index), (VALUE, const_coeff))
+                index_can_be_skipped = True
+            # Or the value wasn't changed
+            elif prev_value_coeff == 1 and const_coeff == 0:
+                index_can_be_skipped = True
+
+        if not index_can_be_skipped:
+            unskipped_indexes.append(index)
+            if const_coeff != 0:
+                need_unit_row = True
+
     if need_unit_row:
         unskipped_indexes.append(mat.rows - 1)
-    
     lite_content = []
     for y in unskipped_indexes:
         row = []
@@ -121,10 +107,9 @@ def run_loop(settings, matcode, index, vector_len):
                 sub_mat, index = run_loop(
                     settings, matcode, index + 1, vector_len,
                 )
-                
+
                 need_min_rows = settings['opt_min_rows']
                 if need_min_rows:
-                    rows_count = sub_mat.rows
                     sub_mat, unskipped, fix_mat = skip_rows(sub_mat)
                 cur_mat = sub_mat ** instr[1][1]
                 if need_min_rows:
@@ -134,13 +119,13 @@ def run_loop(settings, matcode, index, vector_len):
                     raise InvalidMatcodeError
                 cur_mat = Matrix.identity(vector_len)
                 matcode_map[oper](cur_mat.content, instr[1], instr[2])
-        except (InvalidMatcodeError, KeyError, TypeError) as err:
-            if isinstance(err, InvalidMatcodeError) and err.args:
+        except InvalidMatcodeError as err:
+            if err.args:
                 raise err
             raise InvalidMatcodeError((
                 'Invalid matrix code instruction: %s'
             ) % ' '.join(map(repr, instr)))
-    
+
         mat *= cur_mat
         index += 1
 
