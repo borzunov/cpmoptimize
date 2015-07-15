@@ -227,11 +227,11 @@ Every found loop must satisfy a number of conditions. Some of them are checked a
 2. Operands must satisfy the *predictability* conditions (their value must be the same at each iteration and mustn't depend on result of any computations in the previous iteration):
 
     * All operands of addition and subtraction and operand of the unary minus can be unpredictable.
-    
+
     * At least one operand of multiplication must be predictable (similarly that only multiplication by a constant is allowed in the original interpreter).
-    
+
     * All operands of exponentiation, division, taking the remainder and bitwise operations must be predictable.
-    
+
 3. All constant used in the loop must have allowed type.
 
 If these conditions are satisfied, a special *hook* is installed to bytecode before the loop (the loop's original bytecode isn't removed). This hook will check the remaining conditions, which can be checked only immediately before the start of the loop due the dynamic typing in Python:
@@ -283,7 +283,7 @@ a, b = b, a + b
 
 An optimized loop may run slower on a small number of iterations (it can be seen at the chart above) because it requires some time to construct the matrices and check the types. You can set the __*iters_limit*__ parameter to neutralize this effect. Then hook will check number of the iterations in the loop before executing optimization and will cancel optimization if this number doesn't exceed the given parameter.
 
-The limit is set to *5000* by default. It can't be set lesser than *2* iterations.
+The limit is set to *5000* by default. Minimal value is *2* iterations.
 
 It's clear that the best value of the parameter is the point of intersection of the lines on the chart corresponding to the execution time of the original and optimized variants of the function. Then the function can choose the fastest algorithm in each case:
 
@@ -300,11 +300,11 @@ If the optimization fails at the stage of application the decorator, *cpmoptimiz
 >>>
 >>> @cpmoptimize(strict=True)
 ... def f(n, k):
-...     res = 0
+...     res = 1
 ...     for i in xrange(n):
 ...         res += i * res
 ...     return res
-... 
+...
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
   File "cpmoptimize/__init__.py", line 100, in upgrade_func
@@ -325,7 +325,7 @@ If the optimization fails during the checks in the hook (it was found that the i
 ...     for elem in iterable:
 ...         res += elem
 ...     return res
-... 
+...
 >>> f(xrange(30))
 435
 >>> f(range(30))
