@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import core
+import tests_common as common
 
 start = 3
 coeff = 5
@@ -16,7 +16,7 @@ def naive(count):
 
 def _optimal(first, count):
     # Returns (sum, coeff ** count)
-    
+
     if count & 1:
         sub_sum, sub_pow = _optimal(first, count - 1)
         return first + sub_sum * coeff, sub_pow * coeff
@@ -28,16 +28,16 @@ def _optimal(first, count):
 def optimal(count):
     """Optimal algorithm based on the idea similar to the binary
     exponentiation."""
-    
+
     return _optimal(start, count)[0]
 
 if __name__ == '__main__':
-    core.run(
+    common.run(
         'geom_sum', None,
-        core.optimized(naive) + [
+        common.optimized(naive) + [
             ('optimal', optimal),
         ],
         [
-            (None, 'linear', core.linear_scale(10000, 15)),
+            (None, 'linear', common.linear_scale(10000, 15)),
         ],
     )

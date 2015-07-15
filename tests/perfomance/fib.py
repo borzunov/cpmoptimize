@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 """Calculate n-th number in Fibonacci sequence"""
 
-import core
-
+import tests_common as common
 from cpmoptimize.matrices import Matrix
 
 def naive(n):
@@ -15,7 +14,7 @@ def naive(n):
 
 def classic_matrices(n):
     """Implementation via explicit fast matrix exponentiation"""
-    
+
     if not n:
         return 0
     return (Matrix([
@@ -25,7 +24,7 @@ def classic_matrices(n):
 
 def _fast_doubling(n):
     # Returns (F[n], F[n + 1])
-    
+
     if not n:
         return 0, 1
     a, b = _fast_doubling(n >> 1)
@@ -38,36 +37,36 @@ def _fast_doubling(n):
 def fast_doubling(n):
     """Fast doubling - implementation via matrix exponentiation
     with the redundant calculations removed."""
-    
+
     return _fast_doubling(n)[0]
 
 if __name__ == '__main__':
     # Test all functions on different testcases
-    core.run(
+    common.run(
         'fib', None,
-        core.optimized(naive) + [
+        common.optimized(naive) + [
             ('matrices', classic_matrices),
             ('fast dbl', fast_doubling),
         ],
         [
-            ('small', 'linear', core.linear_scale(30000, 15)),
-            ('big', 'linear', core.linear_scale(300000, 15)),
+            ('small', 'linear', common.linear_scale(30000, 15)),
+            ('big', 'linear', common.linear_scale(300000, 15)),
         ],
     )
-    
+
     # Test optimized function with different settings
-    core.run(
+    common.run(
         'fib', None,
-        core.optimized(naive),
-        [('demo', 'linear', core.linear_scale(60000, 30))],
+        common.optimized(naive),
+        [('demo', 'linear', common.linear_scale(60000, 30))],
     )
-    core.run(
+    common.run(
         'fib', None,
-        core.optimized(naive, iters_limit=10000),
-        [('border', 'linear', core.linear_scale(60000, 30))],
+        common.optimized(naive, iters_limit=10000),
+        [('border', 'linear', common.linear_scale(60000, 30))],
     )
-    core.run(
+    common.run(
         'fib', None,
-        core.optimized(naive, try_options=True),
-        [('options', 'linear', core.linear_scale(120000, 30))],
+        common.optimized(naive, try_options=True),
+        [('options', 'linear', common.linear_scale(120000, 30))],
     )

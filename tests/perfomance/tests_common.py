@@ -6,7 +6,7 @@ import os
 import sys
 from time import time
 
-sys.path.append(os.path.pardir)
+sys.path.append(os.path.join(os.path.pardir, os.path.pardir))
 from cpmoptimize import cpmoptimize
 
 
@@ -19,11 +19,11 @@ plots_dir = 'plots'
 
 def init_plots():
     global plt, support_plots
-    
+
     # Check whether plots drawing is already initialized
     if support_plots is not None:
         return
-    
+
     # Check whether "matplotlib" library is installed
     try:
         import matplotlib.pyplot as plt
@@ -33,7 +33,7 @@ def init_plots():
         support_plots = False
         print "[*] Matplotlib isn't found"
         return
-        
+
     # If plots are supported, make directory for saving images
     try:
         os.makedirs(plots_dir)
@@ -41,11 +41,11 @@ def init_plots():
     except OSError:
         # If directory already exists, do nothing
         pass
- 
+
 # Plots' size (in inches)
 linear_plots_size = 6, 4
 other_plots_size = 5, 5
- 
+
 # Font size for plots
 lable_fontsize = 11
 normal_fontsize = 9
@@ -53,13 +53,13 @@ normal_fontsize = 9
 def make_plot(filename, title, arguments, methods, scale):
     if not support_plots:
         return
-    
+
     is_linear = (scale == 'linear')
-    
+
     # Create new plot with specified size
     plot_size = linear_plots_size if is_linear else other_plots_size
     plt.figure(figsize=plot_size)
-    
+
     for name, func, measures in methods:
         # For every sequence draw it on the plot. Specify markers'
         # style (circles with specified size) and add record about this
@@ -70,15 +70,15 @@ def make_plot(filename, title, arguments, methods, scale):
         # Define that both axes always starts from zero
         axis = plt.axis()
         plt.axis((0, axis[1], 0, axis[3]))
-    
+
     # Specify scale type (linear or logarithmical)
     plt.xscale(scale)
     plt.yscale(scale)
-    
+
     # Specify font for axes' ticks
     plt.xticks(fontsize=normal_fontsize)
     plt.yticks(fontsize=normal_fontsize)
-    
+
     # Enable grid in the background
     plt.grid(True)
 
@@ -107,12 +107,12 @@ class Table(object):
         # one line are filled to desired width by spaces. They also
         # will be separated by three-symbol delimiter " | " (first or
         # last space is skipped if cell is placed nead table side).
-        
+
         self._cols = cols
-    
+
     def head(self):
         # Print table's head (rows' titles)
-        
+
         # Generate (and print) horizontal line consisting of dashes
         self._hor = '+'
         for name, width in self._cols:
@@ -126,18 +126,18 @@ class Table(object):
         print line
 
         print self._hor
-        
+
         # Make a variable for storing index of current column
         self._col_index = 0
-    
+
     def append(self, data):
         # Fill next cell in the table
-        
+
         try:
             # Convert table's cell to string and fill it to desired
             # width by spaces at the left
             elem = str(data).rjust(self._cols[self._col_index][1])
-            
+
             line = ''
             if self._col_index == 0:
                 # Usually delimiters are putted at the right of the
@@ -152,7 +152,7 @@ class Table(object):
             # Update screen after filling of every cell in the table
             sys.stdout.write(line)
             sys.stdout.flush()
-            
+
             # Move to the next column. If this column was last in the
             # row, move to begin of the next row.
             self._col_index = (self._col_index + 1) % len(self._cols)
@@ -161,10 +161,10 @@ class Table(object):
             raise AttributeError(
                 "Need to print table's header before table's cols",
             )
-    
+
     def footer(self):
         # Print table's footer
-        
+
         try:
             # Print horizontal line
             print self._hor + '\n'
@@ -214,11 +214,11 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
     if draw_plot:
         init_plots()
         print
-    
+
     comment = '' if comment is None else ', ' + comment
     title = 'Function "%s"%s:\n' % (name, comment)
     print title
-    
+
     cols = [('arg', arg_col_width)]
     methods = []
     for index, (desc, func) in enumerate(functions):
@@ -226,22 +226,22 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
         cols.append(('%s, s' % desc, width))
         methods.append([desc, func, None])
     cols.append(('match', match_col_width))
-    
+
     for case_desc, plot_type, arguments in cases:
         if case_desc is not None:
             print '(*) Testcase "%s":' % case_desc
-        
+
         # Clear previous measures
         for method in methods:
             method[2] = []
-        
+
         # Make table object
         table = Table(cols)
         table.head()
         for arg in arguments:
             # Fill "arg" column
             table.append(arg)
-            
+
             # Fill measures columns
             prev_time = None
             data_set = set()
@@ -259,7 +259,7 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
                 table.append(cell)
                 measures.append(cur_time)
                 data_set.add(data)
-            
+
             # Fill "match" column
             table.append(str(len(data_set) == 1))
         table.footer()
@@ -283,7 +283,7 @@ def apply_options(settings, naive_func, clear_stack, min_rows):
         name += 'c'
     if not min_rows:
         name += 'm'
-    
+
     return (name, cpmoptimize(
         opt_clear_stack=clear_stack, opt_min_rows=min_rows, **settings
     )(naive_func))

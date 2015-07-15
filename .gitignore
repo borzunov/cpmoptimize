@@ -1,2 +1,7 @@
 *.pyc
-tests/plots
+__pycache__
+
+*.egg-info
+dist
+
+plots

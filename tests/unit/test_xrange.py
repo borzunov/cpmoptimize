@@ -19,8 +19,7 @@ warnings.filterwarnings("ignore", "integer argument expected",
 # Replace built-in xrange to xrange from cpmoptimize module
 import os
 
-sys.path.append(os.path.pardir)
-
+sys.path.append(os.path.join(os.path.pardir, os.path.pardir))
 from cpmoptimize import xrange
 
 

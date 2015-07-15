@@ -7,7 +7,7 @@ import os
 import sys
 import unittest
 
-sys.path.append(os.path.pardir)
+sys.path.append(os.path.join(os.path.pardir, os.path.pardir))
 from cpmoptimize import cpmoptimize
 from cpmoptimize.recompiler import RecompileError
 

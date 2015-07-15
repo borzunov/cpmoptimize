@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import core
-
+import tests_common as common
 from cpmoptimize import cpmoptimize, xrange
 
 start = 32
@@ -20,24 +19,24 @@ def formula(count):
 pow10_wrapper = lambda func: (lambda arg: func(10 ** arg))
 
 if __name__ == '__main__':
-    core.run(
+    common.run(
         'arith_sum', 'N elements',
-        core.optimized(naive) + [
+        common.optimized(naive) + [
             ('formula', formula),
         ],
         [
-            ('linear', None, core.linear_scale(600000, 5)),
+            ('linear', None, common.linear_scale(600000, 5)),
         ],
         exec_compare=False, draw_plot=False,
     )
-    core.run(
+    common.run(
         'arith_sum', '10 ** N elements',
         [
             ('cpm', pow10_wrapper(cpmoptimize()(naive))),
             ('formula', pow10_wrapper(formula)),
         ],
         [
-            ('exp', None, core.linear_scale(10000, 5)),
+            ('exp', None, common.linear_scale(10000, 5)),
         ],
         exec_compare=False, draw_plot=False,
     )

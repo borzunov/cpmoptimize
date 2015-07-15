@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import core
+import tests_common as common
 
 base = 78
 
@@ -13,7 +13,7 @@ def naive(n):
 
 def binary_exp(n):
     """Binary exponentiation algorithm"""
-    
+
     cur = base
     res = 1
     if not n:
@@ -30,13 +30,13 @@ def built_in(n):
     return base ** n
 
 if __name__ == '__main__':
-    core.run(
+    common.run(
         'power', None,
-        core.optimized(naive) + [
+        common.optimized(naive) + [
             ('binary', binary_exp),
             ('built-in', built_in),
         ],
         [
-            (None, 'linear', core.linear_scale(10000, 15)),
+            (None, 'linear', common.linear_scale(10000, 15)),
         ],
     )
