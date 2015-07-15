@@ -13,7 +13,7 @@ class CPMRange(object):
     # This is replacement for it. All abilities of original xrange are
     # saved (this implementation almost completely passes Python 2.7.8
     # xrange unit tests, see file "test_xranges.py").
-    
+
     def __init__(self, arg1, arg2=None, step=1):
         if arg2 is None:
             arg1, arg2 = 0, arg1
@@ -24,14 +24,14 @@ class CPMRange(object):
                 raise TypeError('an integer is required')
         if step == 0:
             raise ValueError('arg 3 must not be zero')
-            
+
         rem = (arg2 - arg1) % step
         if rem != 0:
             arg2 += step - rem
         if cmp(arg1, arg2) != cmp(0, step):
             arg2 = arg1
         self._start, self._stop, self._step = arg1, arg2, step
-        
+
     def __iter__(self):
         number = self._start
         while cmp(number, self._stop) == cmp(0, self._step):
@@ -61,7 +61,7 @@ class CPMRange(object):
 
     def __len__(self):
         return (self._stop - self._start) / self._step
-        
+
     def __repr__(self):
         args = []
         if self._start != 0 or self._step != 1:
@@ -83,14 +83,14 @@ def check_iterable(settings, iterable):
         raise TypeError(
             'Iterator has type %s instead of type "xrange"' % type(iterable)
         )
-    
+
     iters_count = iterable.__len__()
     if iters_count <= settings['iters_limit']:
         profiler.note(
             settings, 'Skipped optimization of %s iterations' % iters_count,
         )
         return None
-    
+
     start = iterable[0]
     step = iterable[1] - start
     last = iterable[-1]
@@ -122,11 +122,11 @@ def load_vars(settings, used_vars, globals_dict, locals_dict):
         except (TypeError, KeyError):
             check_value = False
             vector.append(var_undef_value)
-        
+
         if check_value and not isinstance(value, settings['types']):
             allowed_types = ', '.join(map(repr, settings['types']))
             raise TypeError((
-                'Variable "%s" has unallowed type %s instead of ' +
+                'Variable "%s" has an unallowed type %s instead of ' +
                 'one of allowed types: %s'
             ) % (name, type(value), allowed_types))
     return vector
@@ -162,7 +162,7 @@ def exec_loop(
             start, step, iters_count, last = range_desc
         except TypeError:
             return None
-        
+
         # Load necessary variables, check it's types and make vector
         # for further operations with matrixes appending unit row
         vector = load_vars(
@@ -172,22 +172,22 @@ def exec_loop(
         err.message = "Can't run optimized loop: " + err.message
         profiler.exc(settings, "Hook didn't allow optimization", err)
         return None
-        
+
     # Define constant values in matrix code
     matcode = define_values(matcode, folded, {
         'start': start, 'step': step, 'iters_count': iters_count,
     })
-    
+
     # Add last detail to matrix code before it's execution
     matcode.append([END])
-    
+
     # Run matrix code
     vector = run.run_matcode(settings, matcode, vector)
-    
+
     profiler.success(
         settings, 'Optimized execution of %s iterations' % iters_count,
     )
-    
+
     # Pack real variables' values to a list that will be unpacked in
     # the main function to the values that would be assigned to the
     # globals and the locals. We can't implement storing variables like
@@ -241,7 +241,7 @@ def create_head_hook(state, loop_end_label):
         #     None, res, res, iterator, ...
         (byteplay.COMPARE_OP, 'is not'),
         (byteplay.POP_JUMP_IF_FALSE, head_end_label),
-        
+
         # Code below runs if res is not None (optimization was
         # successful).
         # Now the stack looks like:
@@ -257,7 +257,7 @@ def create_head_hook(state, loop_end_label):
         # We need to pop iterator because loop will be skipped.
         (byteplay.POP_TOP, None),
         (byteplay.JUMP_ABSOLUTE, loop_end_label),
-        
+
         # Code below runs if res is None (optimization failed).
         # Now the stack looks like:
         #     None, iterator, ...

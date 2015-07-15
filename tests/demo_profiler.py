@@ -37,7 +37,7 @@ def unallowed_constant():
 
 @cpmoptimize(verbose=sys.stderr)
 def fib(a_start, iterator):
-    a = 0
+    a = a_start
     b = 1
     for i in iterator:
         a, b = b, a + b
@@ -47,7 +47,7 @@ def fib(a_start, iterator):
 # Run-time exceptions
 
 fib(0, range(6000))
-fib('hello', xrange(6000))
+fib(0.5, xrange(6000))
 
 
 fib(0, xrange(1000)) # Skipped optimization

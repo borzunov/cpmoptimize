@@ -11,7 +11,7 @@ class RecompileError(Exception):
     def __init__(self, message, state):
         self.message = message
         self.state = state
-    
+
     def __str__(self):
         desc = self.message
         if self.state.lineno is not None:
@@ -28,7 +28,7 @@ class RecompilerState(object):
     def __init__(self, settings):
         self._settings = settings
         self.lineno = settings['head_lineno']
-        
+
         self.stack = []
         self._content = []
         # List of straight references of all used variables
@@ -46,33 +46,33 @@ class RecompilerState(object):
         # instructions would be executed in runtime once. Calculated
         # values would be inserted into the matrices.
         self._consts = []
-    
+
     @property
     def settings(self):
         return self._settings
-        
+
     @property
     def content(self):
         return self._content
-        
+
     @property
     def consts(self):
         return self._consts
-        
+
     @property
     def vars_storage(self):
         return self._vars_storage
-        
+
     @property
     def real_vars_indexes(self):
         return self._real_vars_indexes
-        
+
     _real_folded_arr = '__cpm::folded'
-    
+
     @property
     def real_folded_arr(self):
         return self._real_folded_arr
-            
+
     def add_const(self, straight):
         arg_type, arg = straight
         if arg_type == FOLD_TOS:
@@ -91,7 +91,7 @@ class RecompilerState(object):
         index = len(self._consts)
         self._consts.append(lines)
         return CONST, index
-    
+
     def add_var(self, straight, mutation):
         # If variable was changed at least once in loop's body, we need
         # mark it as mutable at the beginning of the compilation.
@@ -99,7 +99,7 @@ class RecompilerState(object):
         # (e.g. if they were if it has been assigned a known constant).
         try:
             index, unified = self._vars_map[straight]
-            
+
             if mutation and unified[0] != VAR:
                 unified = VAR, index
                 self.store_var(straight, unified)
@@ -109,7 +109,7 @@ class RecompilerState(object):
             var_type = straight[0]
             if var_type in (NAME, GLOBAL, FAST, DEREF):
                 self._real_vars_indexes.append(index)
-            
+
             if mutation:
                 unified = VAR, index
             else:
@@ -119,14 +119,14 @@ class RecompilerState(object):
                 ]))
             self._vars_map[straight] = [index, unified]
         return unified
-    
+
     def _translate_arg(self, arg):
         # Translate argument of types used in matcode generation to
         # argument with type VALUE, CONST or VAR (make unified
         # reference from straight)
-        
+
         arg_type = arg[0]
-        
+
         if arg_type in (VALUE, CONST, PARAM):
             return arg
         if arg_type == FOLD_TOS:
@@ -142,16 +142,16 @@ class RecompilerState(object):
             # type STACK first (make absolute reference from relative)
             arg = STACK, len(self.stack) - 1 - arg[1]
         return self.add_var(arg, True)
-    
+
     def append(self, *instrs):
         for instr in instrs:
             oper = instr[0]
             args = map(self._translate_arg, instr[1:])
             self._content.append([oper] + args)
-    
+
     def load_var(self, straight):
         return self._vars_map[straight][1]
-    
+
     def store_var(self, straight, unified):
         self._vars_map[straight][1] = unified
 
@@ -180,7 +180,7 @@ def create_rot(count):
             state.append(
                 [MOV, (TOS, -1), (VALUE, 0)],
             )
-        
+
         state.stack[-count:] = (
             [state.stack[-1]] + state.stack[-count:-1]
         )
@@ -193,14 +193,14 @@ def create_dup(count):
                 state.append(
                     [MOV, (TOS, index - count), (TOS, index)],
                 )
-        
+
         state.stack += state.stack[-count:]
     return handle_dup
 
 def handle_dup_topx(state, instr):
     create_dup(instr[1])(state, instr)
 
-def handle_unary_negative(state, instr):    
+def handle_unary_negative(state, instr):
     if state.stack[-1] is not None:
         state.stack[-1].append(instr)
     else:
@@ -214,7 +214,7 @@ def handle_unary_negative(state, instr):
                 [MOV, (TOS, -1), (VALUE, 0)],
             )
 
-def handle_unary_const(state, instr):    
+def handle_unary_const(state, instr):
     if state.stack[-1] is not None:
         state.stack[-1].append(instr)
     else:
@@ -234,20 +234,20 @@ def handle_binary_multiply(state, instr):
             state.append(
                 [MOV, (TOS, 0), (VALUE, 0)],
             )
-        
+
         state.stack[-2] = None
         state.stack.pop()
     elif state.stack[-1] is not None:
         state.append(
             [MUL, (TOS, 1), (FOLD_TOS, 0)],
         )
-        
+
         state.stack.pop()
     else:
         raise RecompileError((
             'Multiplication of two unpredictable values is unsupported'
         ), state)
-        
+
 def handle_binary_add(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
         state.stack[-2] += state.stack[-1] + [instr]
@@ -261,14 +261,14 @@ def handle_binary_add(state, instr):
             state.append(
                 [MOV, (TOS, 0), (VALUE, 0)],
             )
-        
+
         state.stack[-2] = None
         state.stack.pop()
     elif state.stack[-1] is not None:
         state.append(
             [ADD, (TOS, 1), (FOLD_TOS, 0)],
         )
-        
+
         state.stack.pop()
     else:
         state.append(
@@ -278,9 +278,9 @@ def handle_binary_add(state, instr):
             state.append(
                 [MOV, (TOS, 0), (VALUE, 0)],
             )
-        
+
         state.stack.pop()
-        
+
 def handle_binary_subtract(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
         state.stack[-2] += state.stack[-1] + [instr]
@@ -295,14 +295,14 @@ def handle_binary_subtract(state, instr):
             state.append(
                 [MOV, (TOS, 0), (VALUE, 0)],
             )
-        
+
         state.stack[-2] = None
         state.stack.pop()
     elif state.stack[-1] is not None:
         state.append(
             [SUB, (TOS, 1), (FOLD_TOS, 0)],
         )
-        
+
         state.stack.pop()
     else:
         state.append(
@@ -312,10 +312,10 @@ def handle_binary_subtract(state, instr):
             state.append(
                 [MOV, (TOS, 0), (VALUE, 0)],
             )
-        
+
         state.stack.pop()
-        
-def handle_binary_const(state, instr):    
+
+def handle_binary_const(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
         state.stack[-2] += state.stack[-1] + [instr]
         state.stack.pop()
@@ -328,7 +328,7 @@ def handle_load_const(state, instr):
     if not isinstance(arg, state.settings['types']):
         allowed_types = ', '.join(map(repr, state.settings['types']))
         raise RecompileError((
-            'Constant %s has unallowed type %s instead of ' +
+            'Constant %s has an unallowed type %s instead of ' +
             'one of allowed types: %s'
         ) % (repr(arg), type(arg), allowed_types), state)
     state.stack.append([instr])
@@ -347,7 +347,7 @@ def handle_load_var(state, instr):
         state.append(
             [MOV, (TOS, -1), straight],
         )
-        
+
         state.stack.append(None)
 
 def handle_store_var(state, instr):
@@ -378,7 +378,7 @@ def handle_store_var(state, instr):
                 [MOV, (TOS, 0), (VALUE, 0)],
             )
         state.store_var(straight, straight)
-    
+
     state.stack.pop()
 
 
@@ -390,13 +390,13 @@ bytecode_handlers = [
     (create_rot(3), [byteplay.ROT_THREE]),
     (create_rot(4), [byteplay.ROT_FOUR]),
     (create_dup(1), [byteplay.DUP_TOP]),
-    
+
     (handle_nop, [byteplay.UNARY_POSITIVE]),
     (handle_unary_negative, [byteplay.UNARY_NEGATIVE]),
     (handle_unary_const, [
         byteplay.UNARY_NOT, byteplay.UNARY_INVERT,
     ]),
-    
+
     (handle_binary_const, [byteplay.BINARY_POWER]),
     (handle_binary_multiply, [byteplay.BINARY_MULTIPLY]),
     (handle_binary_const, [
@@ -409,7 +409,7 @@ bytecode_handlers = [
         byteplay.BINARY_LSHIFT, byteplay.BINARY_RSHIFT,
         byteplay.BINARY_AND, byteplay.BINARY_XOR, byteplay.BINARY_OR,
     ]),
-    
+
     (handle_binary_const, [byteplay.INPLACE_POWER]),
     (handle_binary_multiply, [byteplay.INPLACE_MULTIPLY]),
     (handle_binary_const, [
@@ -422,7 +422,7 @@ bytecode_handlers = [
         byteplay.INPLACE_LSHIFT, byteplay.INPLACE_RSHIFT,
         byteplay.INPLACE_AND, byteplay.INPLACE_XOR, byteplay.INPLACE_OR,
     ]),
-    
+
     (handle_dup_topx, [byteplay.DUP_TOPX]),
     (handle_load_const, [byteplay.LOAD_CONST]),
     (handle_load_var, load_opers),
@@ -435,7 +435,7 @@ for handler, opers in bytecode_handlers:
         supported_opers[oper] = handler
 
 
-    
+
 def browse_vars(state, body):
     # Browse used in loop's body variables for determine its'
     # mutability
@@ -458,7 +458,7 @@ def browse_counter(state, body):
             'Unsupported iterator usage in instruction %s' % repr(instr)
         ), state)
     load_instr = vars_opers_map[arg_type][0], name
-    
+
     if state.settings['opt_min_rows']:
         status = 'n' # Return 'n' if loop's counter isn't used
         for index in xrange(1, len(body)):
@@ -488,7 +488,7 @@ def recompile_body(settings, body):
         # If real counter isn't mutable but used, we need to
         # maintain it's value
         counter_service = elem_straight
-    if counter_status == 'n':    
+    if counter_status == 'n':
         # If real counter isn't used at all, we don't need to
         # maintain this variable in the loop, but we need to save
         # it's final value after the loop
@@ -499,9 +499,9 @@ def recompile_body(settings, body):
         # from rem_body and system doesn't know that counter is mutable
         state.add_var(elem_straight, True)
         state.manual_store_counter = None
-    
+
     browse_vars(state, rem_body)
-    
+
     if counter_status != 'n':
         state.append(
             [MOV, counter_service, (PARAM, 'start')],
@@ -513,13 +513,13 @@ def recompile_body(settings, body):
         state.append(
             [MOV, elem_straight, (COUNTER, None)],
         )
-    
+
     for instr in rem_body:
         oper = instr[0]
         if oper == byteplay.SetLineno:
             state.lineno = instr[1]
             continue
-            
+
         try:
             supported_opers[oper](state, instr)
         except UnpredictArgsError:
@@ -535,7 +535,7 @@ def recompile_body(settings, body):
             raise RecompileError((
                 'Unsupported instruction %s'
             ) % repr(instr), state)
-    
+
     if counter_status != 'n':
         state.append(
             [ADD, counter_service, (PARAM, 'step')],
