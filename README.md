@@ -438,6 +438,6 @@ def f(mode):
 Author
 ------
 
-Copyright (c) 2014 Alexander Borzunov
+Copyright (c) 2014, 2015 Alexander Borzunov
 
 A detailed article and discussion in Russian: http://habrahabr.ru/post/236689/
