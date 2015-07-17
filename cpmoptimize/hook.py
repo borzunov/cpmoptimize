@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
+python_version = sys.version_info
+
 import byteplay
 
 import profiler
@@ -169,8 +173,8 @@ def exec_loop(
             settings, used_vars, globals_dict, locals_dict,
         ) + [1]
     except TypeError as err:
-        err.message = "Can't run optimized loop: " + err.message
-        profiler.exc(settings, "Hook didn't allow optimization", err)
+        profiler.exc(settings, "Hook didn't allow optimization",
+                TypeError("Can't run optimized loop: %s" % err))
         return None
 
     # Define constant values in matrix code
@@ -226,44 +230,71 @@ def create_head_hook(state, loop_end_label):
         (byteplay.DUP_TOP, None),
         (byteplay.STORE_FAST, state.real_folded_arr),
     ]
-    for folded_code in state.consts:
-        content += folded_code + [
-            (byteplay.LIST_APPEND, 1),
-        ]
-    head_end_label = byteplay.Label()
+    if python_version < (2, 7):
+        for folded_code in state.consts:
+            content += [
+                (byteplay.DUP_TOP, None),
+            ] + folded_code + [
+                (byteplay.LIST_APPEND, None),
+            ]
+    else:
+        for folded_code in state.consts:
+            content += folded_code + [
+                (byteplay.LIST_APPEND, 1),
+            ]
     content += [
         (byteplay.CALL_FUNCTION, 9),
         (byteplay.DELETE_FAST, state.real_folded_arr),
         (byteplay.DUP_TOP, None),
         (byteplay.LOAD_CONST, None),
-        # Let's "res" is exec_loop's return value.
-        # Now the stack looks like:
-        #     None, res, res, iterator, ...
-        (byteplay.COMPARE_OP, 'is not'),
-        (byteplay.POP_JUMP_IF_FALSE, head_end_label),
+    ]
+    head_end_label = byteplay.Label()
 
-        # Code below runs if res is not None (optimization was
-        # successful).
-        # Now the stack looks like:
-        #     res, iterator, ...
+    # Let's "res" is a return value of "exec_loop".
+    # Now the stack looks like:
+    #     None, res, res, iterator, ...
+    content += [
+        (byteplay.COMPARE_OP, 'is not'),
+    ]
+    if python_version < (2, 7):
+        content += [
+            (byteplay.JUMP_IF_FALSE, head_end_label),
+            (byteplay.POP_TOP, None),
+        ]
+    else:
+        content += [
+            (byteplay.POP_JUMP_IF_FALSE, head_end_label),
+        ]
+
+    # Code below runs if res is not None (optimization was successful).
+    # Now the stack looks like:
+    #     res, iterator, ...
+    content += [
         (byteplay.UNPACK_SEQUENCE, len(unpacked_straight)),
     ]
-    # Store changed variables' values
+    # Store changed variables
     for straight in unpacked_straight:
         content.append(
             (vars_opers_map[straight[0]][1], straight[1])
         )
+    # We need to pop the iterator because the loop will be skipped
     content += [
-        # We need to pop iterator because loop will be skipped.
         (byteplay.POP_TOP, None),
         (byteplay.JUMP_ABSOLUTE, loop_end_label),
+    ]
 
-        # Code below runs if res is None (optimization failed).
-        # Now the stack looks like:
-        #     None, iterator, ...
+    # Code below runs if res is None (optimization failed).
+    # Now the stack looks like:
+    #     None, iterator, ...           (in Python 2.7)
+    #     False, None, iterator, ...    (in Python < 2.7)
+    content += [
         (head_end_label, None),
         (byteplay.POP_TOP, None),
-        # Right before the loop (before GET_ITER instruction) iterator
-        # must be at the top of the stack.
     ]
+    if python_version < (2, 7):
+        content += [
+            (byteplay.POP_TOP, None),
+        ]
+    # Right before the loop (before GET_ITER instruction) iterator
+    # must be at the top of the stack.
     return content

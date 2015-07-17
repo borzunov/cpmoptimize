@@ -5,7 +5,13 @@ import dis
 import itertools
 import os
 import sys
-import unittest
+
+python_version = sys.version_info
+
+if python_version < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 sys.path.append(os.path.join(os.path.pardir, os.path.pardir))
 from cpmoptimize import cpmoptimize
@@ -319,12 +325,14 @@ class TestExceptions(unittest.TestCase):
         return res
 
     test_unsupported_iterator_type = check_exception(
-        TypeError, r'^Iterator has type .+ instead of ',
+        TypeError, r"^Can't run optimized loop: "
+                   r"Iterator has type .+ instead of ",
         args=(0, range(LOOP_ITERATIONS)))(generalized_fib_func)
 
     test_unallowed_variable_type = check_exception(
-        TypeError, r'^Variable "a" has an unallowed '
-                   r'type .+ instead of one of allowed types',
+        TypeError, r"^Can't run optimized loop: "
+                   r"Variable \"a\" has an unallowed type .+ instead of "
+                   r"one of allowed types",
         args=(0.5, xrange(LOOP_ITERATIONS)))(generalized_fib_func)
 
 

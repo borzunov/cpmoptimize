@@ -22,7 +22,7 @@ def analyze_loop(settings, code, index):
     ):
         return 0
     # Now we found GET_ITER and FOR_ITER instructions
-    
+
     # Try to find SETUP_LOOP
     for rel_index in orig_xrange(index - 3, -1, -1):
         if code[rel_index][0] == byteplay.SETUP_LOOP:
@@ -30,7 +30,7 @@ def analyze_loop(settings, code, index):
             break
     else:
         return 0
-    
+
     # Try to find JUMP_ABSOLUTE and POP_BLOCK by label from FOR_ITER
     pop_block_label = instr[1]
     for rel_index in orig_xrange(index + 1, len(code) - 1):
@@ -47,7 +47,7 @@ def analyze_loop(settings, code, index):
         return 0
     # It's busy to check POP_BLOCK instruction existence to
     # distinguish real for-loops from a list comprehensions
-    
+
     # Try to find marker of current line's number
     for rel_index in orig_xrange(setup_index - 1, -1, -1):
         if code[rel_index][0] == byteplay.SetLineno:
@@ -55,24 +55,24 @@ def analyze_loop(settings, code, index):
             break
     else:
         head_lineno = None
-    
+
     head = code[setup_index + 1:index - 2]
     body = code[index + 1:pop_block_index - 2]
     # Don't forget that "else_body" loop part is also exists
-    
+
     settings['head_lineno'] = head_lineno
     try:
         state = recompiler.recompile_body(settings, body)
     except recompiler.RecompileError as err:
         profiler.exc(settings, 'Recompilation failed', err)
         return 0
-    
+
     # Insert head_handler right before GET_ITER instruction
     head_hook = hook.create_head_hook(state, pop_block_label)
     code[index - 2:index - 2] = head_hook
-    
+
     profiler.note(settings, 'Recompiled')
-    
+
     # Return length of analyzed code
     return len(head_hook)
 
@@ -82,6 +82,25 @@ def patch_copied_func(func, new_code):
         new_code, func.func_globals, name=func.func_name,
         argdefs=func.func_defaults, closure=func.func_closure,
     )
+
+
+def remove_excess_line_numbers(code):
+    # CPython < 2.7 and PyPy add excess SetLineno instructions in some places
+    # that break search of loops.
+
+    excess_instructions_indexes = []
+    cur_line_number = None
+    for index, instr in enumerate(code):
+        if instr[0] == byteplay.SetLineno:
+            new_line_number = instr[1]
+            if cur_line_number == new_line_number:
+                excess_instructions_indexes.append(index)
+            else:
+                cur_line_number = new_line_number
+
+    for offset, index in enumerate(excess_instructions_indexes):
+        index -= offset
+        code[index:index + 1] = []
 
 
 default_types = int, long
@@ -100,16 +119,18 @@ def cpmoptimize(
         'opt_min_rows', 'opt_clear_stack', 'verbose',
     ):
         settings[key] = locals()[key]
-    
+
     def upgrade_func(func):
         settings['repr'] = repr(func)
         internals = byteplay.Code.from_code(func.func_code)
         code = internals.code
-        
+
+        remove_excess_line_numbers(code)
+
         index = 0
         while index < len(code):
             index += analyze_loop(settings, code, index) + 1
-        
+
         return patch_copied_func(func, internals.to_code())
 
     return upgrade_func
