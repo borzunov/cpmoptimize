@@ -32,7 +32,7 @@ def dump_locals(dictionary):
     return tuple(sorted(dictionary.items(), key=lambda item: item[0]))
 
 
-def check_correctness(args=[], kwargs={}, iters_limit=0):
+def check_correctness(args=[], kwargs={}, strict=True, iters_limit=0):
     def decorator(func):
         def testcase_method(self):
             expected = func(*args, **kwargs)
@@ -40,7 +40,7 @@ def check_correctness(args=[], kwargs={}, iters_limit=0):
             actual_variants = []
             for opt_min_rows, opt_clear_stack in options_variants:
                 bound_decorator = cpmoptimize(
-                    strict=True, iters_limit=iters_limit,
+                    strict=strict, iters_limit=iters_limit,
                     opt_min_rows=opt_min_rows, opt_clear_stack=opt_clear_stack,
                     verbose=True)
                 # Debug messages will be generated in verbose mode (so, we can
@@ -307,8 +307,8 @@ class TestExceptions(unittest.TestCase):
                      r"at line \d+ in ")
     def test_unpredictable_multiplication_operands():
         res = 1
-        for i in xrange(LOOP_ITERATIONS):
-            res *= res
+        for i in xrange(2, LOOP_ITERATIONS + 1):
+            res *= i
         return res
 
     @check_exception(RecompilationError,
@@ -343,13 +343,24 @@ class TestExceptions(unittest.TestCase):
         args=(0.5, xrange(LOOP_ITERATIONS)))(generalized_fib_func)
 
 
-class TestItersLimit(unittest.TestCase):
-    test_disabled_optimization = check_correctness(
+class TestSettings(unittest.TestCase):
+    test_iters_limit = check_correctness(
         args=(0.5, xrange(LOOP_ITERATIONS)),
         iters_limit=LOOP_ITERATIONS)(generalized_fib_func)
     # This test can be passed only if the optimization was disabled.
     # Otherwise it would have fallen with TypeError (because variable "a" has
     # an unallowed type).
+
+    @check_correctness(strict=False)
+    def test_recompilation_error_in_non_strict_mode():
+        res = 1
+        for i in xrange(2, LOOP_ITERATIONS + 1):
+            res *= i
+        return res
+
+    test_runtime_error_in_non_strict_mode = check_correctness(
+        args=(0, range(LOOP_ITERATIONS)),
+        strict=False)(generalized_fib_func)
 
 
 if __name__ == '__main__':
