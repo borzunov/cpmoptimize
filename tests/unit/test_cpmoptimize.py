@@ -14,8 +14,7 @@ else:
     import unittest
 
 sys.path.append(os.path.join(os.path.pardir, os.path.pardir))
-from cpmoptimize import cpmoptimize
-from cpmoptimize.recompiler import RecompileError
+from cpmoptimize import cpmoptimize, RecompilationError
 
 
 LOOP_ITERATIONS = 12345
@@ -286,8 +285,9 @@ def check_exception(exception, regexp, args=[], kwargs={}, iters_limit=0):
 
 
 class TestExceptions(unittest.TestCase):
-    @check_exception(RecompileError,
-                     r"^Can't optimize loop: Unsupported instruction")
+    @check_exception(RecompilationError,
+                     r"^Can't optimize loop: Unsupported instruction .+ "
+                     r"at line \d+ in ")
     def test_unsupported_instruction():
         res = 0
         for i in xrange(LOOP_ITERATIONS):
@@ -297,27 +297,30 @@ class TestExceptions(unittest.TestCase):
                 res += 2
         return res
 
-    @check_exception(RecompileError,
+    @check_exception(RecompilationError,
                      r"^Can't optimize loop: Multiplication of "
-                     r"two unpredictable values is unsupported")
+                     r"two unpredictable values is unsupported "
+                     r"at line \d+ in ")
     def test_unpredictable_multiplication_operands():
         res = 1
         for i in xrange(LOOP_ITERATIONS):
             res *= res
         return res
 
-    @check_exception(RecompileError,
-                     r"^Can't optimize loop: All operands of instruction "
-                     r".+ must be a constant or must have a predictable value")
+    @check_exception(RecompilationError,
+                     r"^Can't optimize loop: All operands of instruction .+ "
+                     r"must be a constant or must have a predictable value "
+                     r"at line \d+ in ")
     def test_unpredictable_binary_and_operands():
         res = 1
         for i in xrange(LOOP_ITERATIONS):
             res += res & i
         return res
 
-    @check_exception(RecompileError,
+    @check_exception(RecompilationError,
                      r"^Can't optimize loop: Constant 'a' has an unallowed "
-                     r"type .+ instead of one of allowed types")
+                     r"type .+ instead of one of allowed types: .+ "
+                     r"at line \d+ in ")
     def test_unallowed_constant_type():
         res = ''
         for i in xrange(6000):
@@ -332,7 +335,7 @@ class TestExceptions(unittest.TestCase):
     test_unallowed_variable_type = check_exception(
         TypeError, r"^Can't run optimized loop: "
                    r"Variable \"a\" has an unallowed type .+ instead of "
-                   r"one of allowed types",
+                   r"one of allowed types: ",
         args=(0.5, xrange(LOOP_ITERATIONS)))(generalized_fib_func)
 
 

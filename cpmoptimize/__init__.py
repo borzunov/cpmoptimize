@@ -63,7 +63,7 @@ def analyze_loop(settings, code, index):
     settings['head_lineno'] = head_lineno
     try:
         state = recompiler.recompile_body(settings, body)
-    except recompiler.RecompileError as err:
+    except recompiler.RecompilationError as err:
         profiler.exc(settings, 'Recompilation failed', err)
         return 0
 
@@ -136,4 +136,7 @@ def cpmoptimize(
     return upgrade_func
 
 
-__all__ = ['cpmoptimize', 'xrange']
+RecompilationError = recompiler.RecompilationError
+
+
+__all__ = ['cpmoptimize', 'xrange', 'RecompilationError']

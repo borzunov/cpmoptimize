@@ -293,25 +293,27 @@ It's clear that the best value of the parameter is the point of intersection of 
 
 Sometimes it's necessary to apply the optimization. For example, program will hang if a loop with _10 ** 1000_ iterations will not be optimized. Flag __*strict*__ is created for such cases. It's disabled by default, but if you enable it, program will throw exception if one of normal *for* loops will not be optimized.
 
-If the optimization fails at the stage of application the decorator, *cpmoptimize.recompiler.RecompilationError* will be raised. For example, let's try to multiply two unpredictable variables:
+If the optimization fails at the stage of application the decorator, *cpmoptimize.RecompilationError* will be raised. For example, let's try to multiply two unpredictable variables:
 
 ```python
 >>> from cpmoptimize import cpmoptimize
 >>>
 >>> @cpmoptimize(strict=True)
-... def f(n, k):
+... def factorial(n):
 ...     res = 1
-...     for i in xrange(n):
-...         res += i * res
+...     for i in xrange(2, n + 1):
+...         res *= i
 ...     return res
 ...
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
-  File "cpmoptimize/__init__.py", line 100, in upgrade_func
+  File "cpmoptimize/__init__.py", line 132, in upgrade_func
     index += analyze_loop(settings, code, index) + 1
-  File "cpmoptimize/__init__.py", line 59, in analyze_loop
-    raise err
-cpmoptimize.recompiler.RecompileError: Multiplication of two unpredictable values is unsupported
+  File "cpmoptimize/__init__.py", line 67, in analyze_loop
+    profiler.exc(settings, 'Recompilation failed', err)
+  File "cpmoptimize/profiler.py", line 16, in exc
+    raise exc
+cpmoptimize.recompiler.RecompilationError: Can't optimize loop: Multiplication of two unpredictable values is unsupported at line 5 in <function factorial at 0x7f6025895f50>
 ```
 
 If the optimization fails during the checks in the hook (it was found that the iterator or variables types aren't supported), *TypeError* will be raised:
@@ -332,9 +334,11 @@ If the optimization fails during the checks in the hook (it was found that the i
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
   File "<stdin>", line 4, in f
-  File "cpmoptimize/hook.py", line 170, in exec_loop
-    raise err
-TypeError: Iterator in optimized loops must have type "xrange" instead of <type 'list'>
+  File "cpmoptimize/hook.py", line 177, in exec_loop
+    TypeError("Can't run optimized loop: %s" % err))
+  File "cpmoptimize/profiler.py", line 16, in exc
+    raise exc
+TypeError: Can't run optimized loop: Iterator has type <type 'list'> instead of type "xrange"
 ```
 
 #### Options of advanced optimization

@@ -7,7 +7,7 @@ from matcode import *
 
 
 
-class RecompileError(Exception):
+class RecompilationError(Exception):
     def __init__(self, message, state):
         self.message = message
         self.state = state
@@ -20,7 +20,7 @@ class RecompileError(Exception):
             )
         return "Can't optimize loop: " + desc
 
-class UnpredictArgsError(Exception):
+class UnpredictableArgsError(Exception):
     pass
 
 
@@ -218,7 +218,7 @@ def handle_unary_const(state, instr):
     if state.stack[-1] is not None:
         state.stack[-1].append(instr)
     else:
-        raise UnpredictArgsError
+        raise UnpredictableArgsError
 
 
 def handle_binary_multiply(state, instr):
@@ -244,7 +244,7 @@ def handle_binary_multiply(state, instr):
 
         state.stack.pop()
     else:
-        raise RecompileError((
+        raise RecompilationError((
             'Multiplication of two unpredictable values is unsupported'
         ), state)
 
@@ -320,14 +320,14 @@ def handle_binary_const(state, instr):
         state.stack[-2] += state.stack[-1] + [instr]
         state.stack.pop()
     else:
-        raise UnpredictArgsError
+        raise UnpredictableArgsError
 
 
 def handle_load_const(state, instr):
     arg = instr[1]
     if not isinstance(arg, state.settings['types']):
         allowed_types = ', '.join(map(repr, state.settings['types']))
-        raise RecompileError((
+        raise RecompilationError((
             'Constant %s has an unallowed type %s instead of ' +
             'one of allowed types: %s'
         ) % (repr(arg), type(arg), allowed_types), state)
@@ -454,7 +454,7 @@ def browse_counter(state, body):
         if not mutation:
             raise KeyError
     except KeyError:
-        raise RecompileError((
+        raise RecompilationError((
             'Unsupported iterator usage in instruction %s' % repr(instr)
         ), state)
     load_instr = vars_opers_map[arg_type][0], name
@@ -522,17 +522,17 @@ def recompile_body(settings, body):
 
         try:
             supported_opers[oper](state, instr)
-        except UnpredictArgsError:
-            raise RecompileError((
+        except UnpredictableArgsError:
+            raise RecompilationError((
                 'All operands of instruction %s must be a constant ' +
                 'or must have a predictable value'
             ) % oper, state)
         except IndexError:
-            raise RecompileError((
+            raise RecompilationError((
                 'Unsupported loop type or invalid stack usage in bytecode'
             ), state)
         except KeyError:
-            raise RecompileError((
+            raise RecompilationError((
                 'Unsupported instruction %s'
             ) % repr(instr), state)
 
