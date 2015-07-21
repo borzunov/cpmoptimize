@@ -7,7 +7,6 @@ python_version = sys.version_info
 
 import byteplay
 
-import profiler
 import run
 from matcode import *
 
@@ -90,9 +89,9 @@ def check_iterable(settings, iterable):
 
     iters_count = iterable.__len__()
     if iters_count <= settings['iters_limit']:
-        profiler.note(
-            settings, 'Skipped optimization of %s iterations' % iters_count,
-        )
+        if settings['verbose']:
+            settings['logger'].debug("Execution of %s iterations wasn't "
+                                     "optimized" % iters_count)
         return None
 
     start = iterable[0]
@@ -159,22 +158,24 @@ def exec_loop(
     need_store_counter, globals_dict, locals_dict, folded,
 ):
     try:
-        # Check whether iterable for-loop argument has type "xrange"
-        range_desc = check_iterable(settings, iterable)
-        try:
-            # If so, retreive it's parameters
-            start, step, iters_count, last = range_desc
-        except TypeError:
+        # Check whether an iterable has type "xrange" and the required
+        # number of iterations
+        range_params = check_iterable(settings, iterable)
+        if range_params is None:  # If the number of iterations is too little
             return None
+        start, step, iters_count, last = range_params
 
-        # Load necessary variables, check it's types and make vector
-        # for further operations with matrixes appending unit row
+        # Load necessary variables, check their types and make a vector
+        # for further operations with matrixes (including a unit row)
         vector = load_vars(
             settings, used_vars, globals_dict, locals_dict,
         ) + [1]
     except TypeError as err:
-        profiler.exc(settings, "Hook didn't allow optimization",
-                TypeError("Can't run optimized loop: %s" % err))
+        generic_err = TypeError("Can't run optimized loop: %s" % err)
+        if settings['verbose']:
+            settings['logger'].debug(generic_err)
+        if settings['strict']:
+            raise generic_err
         return None
 
     # Define constant values in matrix code
@@ -188,9 +189,9 @@ def exec_loop(
     # Run matrix code
     vector = run.run_matcode(settings, matcode, vector)
 
-    profiler.success(
-        settings, 'Optimized execution of %s iterations' % iters_count,
-    )
+    if settings['verbose']:
+        settings['logger'].debug('Execution of %s iterations was optimized '
+                                 'successfully' % iters_count)
 
     # Pack real variables' values to a list that will be unpacked in
     # the main function to the values that would be assigned to the

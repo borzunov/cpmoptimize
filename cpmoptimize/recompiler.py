@@ -9,16 +9,14 @@ from matcode import *
 
 class RecompilationError(Exception):
     def __init__(self, message, state):
-        self.message = message
-        self.state = state
+        self.message = "Can't optimize loop: %s" % message
+        if state.lineno is not None:
+            self.message += ' at line %s' % state.lineno
+        self.message += ' in %s' % state.settings['function_info']
 
     def __str__(self):
-        desc = self.message
-        if self.state.lineno is not None:
-            desc += ' at line %s in %s' % (
-                self.state.lineno, self.state.settings['repr'],
-            )
-        return "Can't optimize loop: " + desc
+        return self.message
+
 
 class UnpredictableArgsError(Exception):
     pass

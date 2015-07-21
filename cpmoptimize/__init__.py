@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+import warnings
 from types import FunctionType
 
 import byteplay
 
 import hook
-import profiler
 import recompiler
 
 
@@ -68,14 +69,18 @@ def analyze_loop(settings, code, index):
     try:
         state = recompiler.recompile_body(settings, body)
     except recompiler.RecompilationError as err:
-        profiler.exc(settings, 'Recompilation failed', err)
+        if settings['verbose']:
+            settings['logger'].debug(err)
+        if settings['strict']:
+            raise
         return 0
 
     # Insert head_handler right before GET_ITER instruction
     head_hook = hook.create_head_hook(state, pop_block_label)
     code[index - 2:index - 2] = head_hook
 
-    profiler.note(settings, 'Recompiled')
+    if settings['verbose']:
+        settings['logger'].debug('Recompilation successful')
 
     # Return length of analyzed code
     return len(head_hook)
@@ -114,19 +119,28 @@ min_iters_limit = 2
 def cpmoptimize(
     strict=False, iters_limit=default_iters_limit, types=default_types,
     opt_min_rows=True, opt_clear_stack=True,
-    verbose=None,
+    verbose=False,
 ):
     iters_limit = max(iters_limit, min_iters_limit)
-    settings = {}
-    for key in (
-        'strict', 'iters_limit', 'types',
-        'opt_min_rows', 'opt_clear_stack', 'verbose',
-    ):
-        settings[key] = locals()[key]
+    if not isinstance(verbose, bool):
+        warnings.warn('Starting with cpmoptimize 0.3, "verbose" parameter '
+                      'must be of type "bool" (now "logging" module is '
+                      'always used for debug messages)')
+    params = locals()
 
     def upgrade_func(func):
-        settings['repr'] = repr(func)
-        internals = byteplay.Code.from_code(func.func_code)
+        settings = params.copy()
+
+        func_code = func.func_code
+        settings['function_info'] = '%s, file "%s"' % (func_code.co_name,
+                                                       func_code.co_filename)
+
+        if settings['verbose']:
+            settings['logger'] = logging.LoggerAdapter(
+                    logging.getLogger(__name__),
+                    {'function_info': settings['function_info']})
+
+        internals = byteplay.Code.from_code(func_code)
         code = internals.code
 
         remove_excess_line_numbers(code)

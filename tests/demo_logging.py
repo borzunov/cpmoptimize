@@ -1,17 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import sys
-import traceback
 
 sys.path.append(os.path.pardir)
 from cpmoptimize import cpmoptimize
 
 
+logging.basicConfig(format='%(levelname)s - %(name)s - %(asctime)s - '
+                           '%(function_info)s - %(message)s',
+                    level=logging.DEBUG)
+
+
 # Recompile-time exceptions
 
-@cpmoptimize(verbose=sys.stderr)
+
+@cpmoptimize(verbose=True)
 def unsupported_instr():
     res = 0
     for i in xrange(6000):
@@ -21,21 +27,24 @@ def unsupported_instr():
             res += 2
     return res
 
-@cpmoptimize(verbose=sys.stderr)
+
+@cpmoptimize(verbose=True)
 def unpredictable_operands():
     res = 1
     for i in xrange(6000):
         res *= res
     return res
 
-@cpmoptimize(verbose=sys.stderr)
+
+@cpmoptimize(verbose=True)
 def unallowed_constant():
     res = ''
     for i in xrange(6000):
         res += 'a'
     return res
 
-@cpmoptimize(verbose=sys.stderr)
+
+@cpmoptimize(verbose=True)
 def fib(a_start, iterator):
     a = a_start
     b = 1
@@ -50,5 +59,5 @@ fib(0, range(6000))
 fib(0.5, xrange(6000))
 
 
-fib(0, xrange(1000)) # Skipped optimization
-fib(0, xrange(6000)) # Successful optimization
+fib(0, xrange(1000))  # Skipped optimization
+fib(0, xrange(6000))  # Successful optimization
