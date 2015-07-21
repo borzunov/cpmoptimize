@@ -10,6 +10,10 @@ import profiler
 import recompiler
 
 
+__author__ = 'Alexander Borzunov'
+__version__ = '0.3'
+
+
 orig_xrange = xrange
 xrange = hook.CPMRange
 

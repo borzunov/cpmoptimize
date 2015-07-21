@@ -5,9 +5,9 @@ from setuptools import setup
 
 setup(
     name = "cpmoptimize",
-    version = "0.2",
+    version = "0.3",
     packages = ['cpmoptimize'],
-    
+
     install_requires = ['byteplay>=0.2'],
 
     author = "Alexander Borzunov",
