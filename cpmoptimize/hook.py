@@ -183,7 +183,6 @@ def exec_loop(
         'start': start, 'step': step, 'iters_count': iters_count,
     })
 
-    # Add last detail to matrix code before it's execution
     matcode.append([END])
 
     # Run matrix code
@@ -193,10 +192,10 @@ def exec_loop(
         settings['logger'].debug('Execution of %s iterations was optimized '
                                  'successfully' % iters_count)
 
-    # Pack real variables' values to a list that will be unpacked in
-    # the main function to the values that would be assigned to the
-    # globals and the locals. We can't implement storing variables like
-    # its' loading because locals() dictionary is read-only.
+    # Pack values of real variables to a list. It will be unpacked in
+    # a main function to values that will be assigned to the
+    # globals and the locals. We can't just modify `locals_dict`
+    # because locals() dictionary is read-only.
     packed = [vector[index] for index in real_vars_indexes]
     if need_store_counter:
         packed.append(last)

@@ -9,9 +9,9 @@ def make_enum(variants):
     class Variant(int):
         def __repr__(self):
             return variants[self]
-        
+
         __str__ = __repr__
-    
+
     for index, elem in enumerate(variants):
         globals()[elem] = Variant(index)
 
@@ -24,12 +24,12 @@ make_enum(matcode_opers)
 matcode_arg_types = ' '.join([
     # Raw constant value
     'VALUE',
-    
+
     # Folded constant ID
     'CONST',
     # Named constant for various parameters
     'PARAM',
-    
+
     # Straight variable references
     'NAME GLOBAL FAST DEREF',
     # Variable for loop's counter
@@ -38,46 +38,46 @@ matcode_arg_types = ' '.join([
     'TOS FOLD_TOS',
     # List of instructions that makes folded constant value
     'FOLD',
-    
+
     # Reference to absolute stack position
     'STACK',
-    
+
     # Unified mutable variable ID
     'VAR',
 ]).split()
 make_enum(matcode_arg_types)
-# Arguments' lifecycle:
-#   1). Before creating the matcode some constants are folded with
+# Lifecycle of arguments:
+#   1). Before creating a matcode some constants are folded using
 #       method "recompiler.RecompilerState.add_const" from type "FOLD"
-#       to type "CONST". This may occur in handler function
-#       "recompiler.handle_store_var".
-#   2). There are types used in matcode generation and passed to method
-#       "recompiler.RecompilerState.append":
+#       to type "CONST". This may occur in method
+#       `recompiler.handle_store_var`.
+#   2). There are types used in the matcode generation and passed to method
+#       `recompiler.RecompilerState.append`:
 #           VALUE
 #           CONST PARAM
 #           NAME GLOBAL FAST DEREF COUNTER TOS FOLD_TOS
-#   3). At the recompilation relative stack references with type
-#       "TOS" are first replaced to absolute references with type
+#   3). During recompilation, firstly relative stack references with type
+#       "TOS" are replaced by absolute references with type
 #       "STACK". Then arguments with types "NAME", "GLOBAL", "FAST",
-#       "DEREF", "COUNTER" and "STACK" are replaced to arguments with
-#       type "VAR", and arguments with type "FOLD_TOS" are replaced to
+#       "DEREF", "COUNTER" and "STACK" are replaced by arguments with
+#       type "VAR", and arguments with type "FOLD_TOS" are replaced by
 #       arguments with type "CONST". This occurs in private method
-#       "recompiler.RecompilerState._translate_arg".
-#   4). There are types used in matcode after recompilation and passed
-#       to function "hook.exec_loop":
+#       `recompiler.RecompilerState._translate_arg`.
+#   4). So, there are types used in the matcode after the recompilation and
+#       passed to function `hook.exec_loop`:
 #           VALUE
 #           CONST PARAM
 #           VAR
-#   5). At the run-time constant references with types "CONST" and
-#       "PARAM" are replaced by its' values (only at this time they
+#   5). During run-time, constant references with types "CONST" and
+#       "PARAM" are replaced by their values (only at this moment they have
 #       become known) with type "VALUE". This occurs in function
-#       "hook.define_values".
-#   6). There are types used in matcode before its' running and passed
-#       to function "run.run_matcode":
+#       `hook.define_values`.
+#   6). So, there are types used in the matcode before its running and passed
+#       to function `run.run_matcode`:
 #           VALUE
 #           VAR
 
-# Map from variable type to bytecode operations working with it
+# Map from a variable type to bytecode operations working with it
 vars_opers_map = {
     NAME: (byteplay.LOAD_NAME, byteplay.STORE_NAME),
     GLOBAL: (byteplay.LOAD_GLOBAL, byteplay.STORE_GLOBAL),

@@ -32,17 +32,17 @@ class RecompilerState(object):
         # List of straight references of all used variables
         self._vars_storage = []
         # List of indexes of really existing variables in
-        # self._vars_storage (we need to save it's values at the end of
+        # self._vars_storage (we need to save their values at the end of
         # the loop)
         self._real_vars_indexes = []
-        # Map from straight variable reference to pair of variable ID
-        # "index" in the unified storage (actually in
-        # self._vars_storage) and it's effective unified
+        # Map from a straight variable reference to a pair of variable
+        # index in a unified storage (actually in
+        # self._vars_storage) and its effective unified
         # reference (VAR, index) or (CONST, const_no)
         self._vars_map = {}
-        # Storage for folded instructions for constants. This
-        # instructions would be executed in runtime once. Calculated
-        # values would be inserted into the matrices.
+        # Storage for folded instructions sets of constants. This
+        # instructions will be executed during run-time once. Calculated
+        # values will be inserted into matrices.
         self._consts = []
 
     @property
@@ -91,10 +91,9 @@ class RecompilerState(object):
         return CONST, index
 
     def add_var(self, straight, mutation):
-        # If variable was changed at least once in loop's body, we need
-        # mark it as mutable at the beginning of the compilation.
-        # During the compilation it's value can become predictable
-        # (e.g. if they were if it has been assigned a known constant).
+        # If a variable was changed at least once in a loop's body, we need
+        # mark it as mutable at the beginning of compilation.
+        # During the compilation its value can become predictable.
         try:
             index, unified = self._vars_map[straight]
 
@@ -435,8 +434,7 @@ for handler, opers in bytecode_handlers:
 
 
 def browse_vars(state, body):
-    # Browse used in loop's body variables for determine its'
-    # mutability
+    # Browse used in loop's body variables to determine their mutability
     for oper, arg in body:
         try:
             arg_type, mutation = vars_types_map[oper]
@@ -484,12 +482,12 @@ def recompile_body(settings, body):
         counter_service = COUNTER, None
     elif counter_status == 'r':
         # If real counter isn't mutable but used, we need to
-        # maintain it's value
+        # maintain its value
         counter_service = elem_straight
     if counter_status == 'n':
         # If real counter isn't used at all, we don't need to
         # maintain this variable in the loop, but we need to save
-        # it's final value after the loop
+        # its final value after the loop
         state.manual_store_counter = elem_straight
     else:
         # We must mark real counter as mutable at the beginning of the

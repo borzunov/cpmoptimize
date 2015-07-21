@@ -50,7 +50,7 @@ def analyze_loop(settings, code, index):
         code[pop_block_index][0] == byteplay.POP_BLOCK
     ):
         return 0
-    # It's busy to check POP_BLOCK instruction existence to
+    # It's important to check POP_BLOCK instruction existence to
     # distinguish real for-loops from a list comprehensions
 
     # Try to find marker of current line's number

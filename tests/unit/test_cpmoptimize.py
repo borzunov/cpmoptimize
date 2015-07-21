@@ -41,8 +41,12 @@ def check_correctness(args=[], kwargs={}, iters_limit=0):
             for opt_min_rows, opt_clear_stack in options_variants:
                 bound_decorator = cpmoptimize(
                     strict=True, iters_limit=iters_limit,
-                    opt_min_rows=opt_min_rows,
-                    opt_clear_stack=opt_clear_stack)
+                    opt_min_rows=opt_min_rows, opt_clear_stack=opt_clear_stack,
+                    verbose=True)
+                # Debug messages will be generated in verbose mode (so, we can
+                # check that this process doesn't cause exceptions),
+                # but they won't be shown here (`logging` module
+                # doesn't show messages with DEBUG level by default).
                 actual_variants.append(bound_decorator(func)(*args, **kwargs))
 
             for actual in actual_variants:
@@ -272,8 +276,8 @@ def check_exception(exception, regexp, args=[], kwargs={}, iters_limit=0):
             for opt_min_rows, opt_clear_stack in options_variants:
                 bound_decorator = cpmoptimize(
                     strict=True, iters_limit=iters_limit,
-                    opt_min_rows=opt_min_rows,
-                    opt_clear_stack=opt_clear_stack)
+                    opt_min_rows=opt_min_rows, opt_clear_stack=opt_clear_stack,
+                    verbose=True)
                 with self.assertRaisesRegexp(exception, regexp):
                     bound_decorator(func)(*args, **kwargs)
 
@@ -343,9 +347,9 @@ class TestItersLimit(unittest.TestCase):
     test_disabled_optimization = check_correctness(
         args=(0.5, xrange(LOOP_ITERATIONS)),
         iters_limit=LOOP_ITERATIONS)(generalized_fib_func)
-        # This test can be passed only if the optimization was disabled.
-        # It would have fallen with TypeError (because variable "a" has
-        # an unallowed type) otherwise.
+    # This test can be passed only if the optimization was disabled.
+    # Otherwise it would have fallen with TypeError (because variable "a" has
+    # an unallowed type).
 
 
 if __name__ == '__main__':
