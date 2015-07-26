@@ -4,6 +4,12 @@ cpmoptimize
 
 A decorator for automatic algorithms optimization via fast matrix exponentiation
 
+.. image:: https://img.shields.io/travis/borzunov/cpmoptimize.svg?style=flat-square
+    :target: https://travis-ci.org/borzunov/cpmoptimize
+
+.. image:: https://img.shields.io/pypi/v/cpmoptimize.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/cpmoptimize
+
 Installation
 ------------
 
