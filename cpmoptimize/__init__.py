@@ -12,7 +12,7 @@ import recompiler
 
 
 __author__ = 'Alexander Borzunov'
-__version__ = '0.3'
+__version__ = '0.3.post1'
 
 
 orig_xrange = xrange

@@ -4,8 +4,6 @@
 import os
 from setuptools import setup
 
-from cpmoptimize import __version__ as version
-
 
 project_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(project_dir, 'README.rst')) as f:
@@ -13,7 +11,7 @@ with open(os.path.join(project_dir, 'README.rst')) as f:
 
 setup(
     name="cpmoptimize",
-    version=version,
+    version='0.3.post1',
     packages=['cpmoptimize'],
 
     install_requires=['byteplay>=0.2'],
