@@ -26,7 +26,9 @@ Or install a previously downloaded and extracted package::
 Basic Example
 -------------
 
-Suppose we want to calculate the ten millionth `Fibonacci number`_ using a program in Python. The function with a trivial algorithm is rather slow::
+Suppose we want to calculate the ten millionth `Fibonacci number`_ using a program in Python. The function with a trivial algorithm is rather slow:
+
+.. code:: python
 
     def fib(n):
         a = 0
@@ -39,7 +41,9 @@ Suppose we want to calculate the ten millionth `Fibonacci number`_ using a progr
 
     # Time: 25 min 31 sec
 
-But if we apply the optimizing decorator, the function will give you the answer much faster::
+But if we apply the optimizing decorator, the function will give you the answer much faster:
+
+.. code:: python
 
     from cpmoptimize import cpmoptimize
 
