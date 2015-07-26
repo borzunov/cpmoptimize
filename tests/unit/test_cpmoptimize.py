@@ -3,7 +3,6 @@
 
 import dis
 import itertools
-import os
 import sys
 
 python_version = sys.version_info
@@ -13,7 +12,6 @@ if python_version < (2, 7):
 else:
     import unittest
 
-sys.path.append(os.path.join(os.path.pardir, os.path.pardir))
 from cpmoptimize import cpmoptimize, RecompilationError
 
 
