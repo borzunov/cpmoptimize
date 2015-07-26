@@ -4,16 +4,18 @@ cpmoptimize
 
 A decorator for automatic algorithms optimization via fast matrix exponentiation
 
-.. image:: https://img.shields.io/travis/borzunov/cpmoptimize.svg?style=flat-square
+.. image:: https://img.shields.io/travis/borzunov/cpmoptimize.svg
     :target: https://travis-ci.org/borzunov/cpmoptimize
 
-.. image:: https://img.shields.io/pypi/v/cpmoptimize.svg?style=flat-square
+.. image:: https://img.shields.io/pypi/v/cpmoptimize.svg
     :target: https://pypi.python.org/pypi/cpmoptimize
+
+.. image:: https://img.shields.io/pypi/pyversions/cpmoptimize.svg
+
+.. image:: https://img.shields.io/pypi/implementation/cpmoptimize.svg
 
 Installation
 ------------
-
-The library supports only Python 2.6 and 2.7 (including PyPy).
 
 You can install the stable version of the library using pip::
 
