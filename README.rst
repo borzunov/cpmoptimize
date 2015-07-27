@@ -4,7 +4,7 @@ cpmoptimize
 
 A decorator for automatic algorithms optimization via fast matrix exponentiation
 
-.. image:: https://img.shields.io/travis/borzunov/cpmoptimize.svg
+.. image:: https://img.shields.io/travis/borzunov/cpmoptimize/master.svg
     :target: https://travis-ci.org/borzunov/cpmoptimize
 
 .. image:: https://img.shields.io/pypi/v/cpmoptimize.svg
@@ -39,7 +39,7 @@ Suppose we want to calculate the ten millionth `Fibonacci number`_ using a progr
             a, b = b, a + b
         return a
 
-    print fib(10 ** 7)
+    result = fib(10 ** 7)
 
     # Time: 25 min 31 sec
 
@@ -57,7 +57,7 @@ But if we apply the optimizing decorator, the function will give you the answer 
             a, b = b, a + b
         return a
 
-    print fib(10 ** 7)
+    result = fib(10 ** 7)
 
     # Time: 18 sec (85x faster)
 

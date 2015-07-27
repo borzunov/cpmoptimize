@@ -2,16 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 from setuptools import setup
 
 
 project_dir = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(project_dir, 'cpmoptimize', '__init__.py')) as f:
+    version = re.search(r"__version__ = '(.+)'", f.read()).groups()[0]
+
 with open(os.path.join(project_dir, 'README.rst')) as f:
     long_description = f.read()
 
 setup(
     name="cpmoptimize",
-    version='0.3.post1',
+    version=version,
     packages=['cpmoptimize'],
 
     install_requires=['byteplay>=0.2'],
