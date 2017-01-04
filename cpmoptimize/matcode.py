@@ -16,12 +16,12 @@ def make_enum(variants):
         globals()[elem] = Variant(index)
 
 
-# Operations in matrix code
-matcode_opers = 'MOV ADD SUB MUL LOOP END'.split()
-make_enum(matcode_opers)
+MATCODE_OPERATIONS = 'MOV ADD SUB MUL LOOP END'.split()
 
-# Types of arguments in matrix code
-matcode_arg_types = ' '.join([
+make_enum(MATCODE_OPERATIONS)
+
+
+MATCODE_ARGUMENT_TYPES = ' '.join([
     # Raw constant value
     'VALUE',
 
@@ -45,7 +45,9 @@ matcode_arg_types = ' '.join([
     # Unified mutable variable ID
     'VAR',
 ]).split()
-make_enum(matcode_arg_types)
+
+make_enum(MATCODE_ARGUMENT_TYPES)
+
 # Lifecycle of arguments:
 #   1). Before creating a matcode some constants are folded using
 #       method "recompiler.RecompilerState.add_const" from type "FOLD"
@@ -77,22 +79,21 @@ make_enum(matcode_arg_types)
 #           VALUE
 #           VAR
 
+
 # Map from a variable type to bytecode operations working with it
-vars_opers_map = {
+VARIABLE_OPERATION_MAP = {
     NAME: (byteplay.LOAD_NAME, byteplay.STORE_NAME),
     GLOBAL: (byteplay.LOAD_GLOBAL, byteplay.STORE_GLOBAL),
     FAST: (byteplay.LOAD_FAST, byteplay.STORE_FAST),
     DEREF: (byteplay.LOAD_DEREF, byteplay.STORE_DEREF),
 }
 
-# Make map from bytecode operation to variable type and status (is this
+# Make a map from a bytecode operation to a variable type and status (whether this
 # variable mutable in this operation)
-vars_types_map = {}
-for arg_type, opers in vars_opers_map.items():
+VARIABLE_TYPE_MAP = {}
+for arg_type, opers in VARIABLE_OPERATION_MAP.items():
     for index, oper in enumerate(opers):
-        vars_types_map[oper] = arg_type, bool(index)
+        VARIABLE_TYPE_MAP[oper] = arg_type, bool(index)
 
 
-__all__ = matcode_opers + matcode_arg_types + [
-    'vars_opers_map', 'vars_types_map',
-]
+__all__ = MATCODE_OPERATIONS + MATCODE_ARGUMENT_TYPES + ['VARIABLE_OPERATION_MAP', 'VARIABLE_TYPE_MAP']

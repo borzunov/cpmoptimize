@@ -4,8 +4,10 @@
 import tests_common as common
 from cpmoptimize import cpmoptimize, xrange
 
+
 start = 32
 step = 43
+
 
 def naive(count):
     res = 0
@@ -13,10 +15,14 @@ def naive(count):
         res += elem
     return res
 
+
 def formula(count):
     return (start * 2 + step * (count - 1)) * count / 2
 
-pow10_wrapper = lambda func: (lambda arg: func(10 ** arg))
+
+def pow10_wrapper(func):
+    return lambda arg: func(10 ** arg)
+
 
 if __name__ == '__main__':
     common.run(

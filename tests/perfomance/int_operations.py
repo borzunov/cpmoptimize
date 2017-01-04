@@ -3,8 +3,10 @@
 
 import tests_common as common
 
+
 # Some global constant
 global_const = 4
+
 
 def naive(n):
     # Definition of using some global variable
@@ -90,6 +92,7 @@ def naive(n):
 
     # Return ordered list with values of all local variables
     return tuple(sorted(locals().items(), key=lambda item: item[0]))
+
 
 if __name__ == '__main__':
     common.run(

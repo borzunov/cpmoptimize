@@ -3,13 +3,16 @@
 
 import tests_common as common
 
+
 base = 78
+
 
 def naive(n):
     res = 1
     for i in xrange(n):
         res *= base
     return res
+
 
 def binary_exp(n):
     """Binary exponentiation algorithm"""
@@ -26,8 +29,10 @@ def binary_exp(n):
         cur *= cur
         n >>= 1
 
+
 def built_in(n):
     return base ** n
+
 
 if __name__ == '__main__':
     common.run(

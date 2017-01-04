@@ -3,8 +3,10 @@
 
 import tests_common as common
 
+
 start = 3
 coeff = 5
+
 
 def naive(count):
     elem = start
@@ -13,6 +15,7 @@ def naive(count):
         res += elem
         elem *= coeff
     return res
+
 
 def _optimal(first, count):
     # Returns (sum, coeff ** count)
@@ -25,11 +28,13 @@ def _optimal(first, count):
     sub_sum, sub_pow = _optimal(first, count >> 1)
     return sub_sum * (1 + sub_pow), sub_pow * sub_pow
 
+
 def optimal(count):
     """Optimal algorithm based on the idea similar to the binary
     exponentiation."""
 
     return _optimal(start, count)[0]
+
 
 if __name__ == '__main__':
     common.run(

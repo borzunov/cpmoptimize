@@ -21,10 +21,8 @@ xrange = hook.CPMRange
 
 def analyze_loop(settings, code, index):
     instr = code[index]
-    if not (
-        instr[0] == byteplay.FOR_ITER and
-        (index >= 2 and code[index - 2][0] == byteplay.GET_ITER)
-    ):
+    if not (instr[0] == byteplay.FOR_ITER and
+            (index >= 2 and code[index - 2][0] == byteplay.GET_ITER)):
         return 0
     # Now we found GET_ITER and FOR_ITER instructions
 
@@ -44,14 +42,12 @@ def analyze_loop(settings, code, index):
             break
     else:
         return 0
-    if not (
-        code[pop_block_index - 2][0] == byteplay.JUMP_ABSOLUTE and
-        code[pop_block_index - 2][1] is code[index - 1][0] and
-        code[pop_block_index][0] == byteplay.POP_BLOCK
-    ):
+    if not (code[pop_block_index - 2][0] == byteplay.JUMP_ABSOLUTE and
+            code[pop_block_index - 2][1] is code[index - 1][0] and
+            code[pop_block_index][0] == byteplay.POP_BLOCK):
         return 0
     # It's important to check POP_BLOCK instruction existence to
-    # distinguish real for-loops from a list comprehensions
+    # distinguish real for-loops from list comprehensions
 
     # Try to find marker of current line's number
     for rel_index in orig_xrange(setup_index - 1, -1, -1):
@@ -61,9 +57,8 @@ def analyze_loop(settings, code, index):
     else:
         head_lineno = None
 
-    head = code[setup_index + 1:index - 2]
     body = code[index + 1:pop_block_index - 2]
-    # Don't forget that "else_body" loop part is also exists
+    # Don't forget that "else_body" loop part also exists
 
     settings['head_lineno'] = head_lineno
     try:
@@ -87,15 +82,13 @@ def analyze_loop(settings, code, index):
 
 
 def patch_copied_func(func, new_code):
-    return FunctionType(
-        new_code, func.func_globals, name=func.func_name,
-        argdefs=func.func_defaults, closure=func.func_closure,
-    )
+    return FunctionType(new_code, func.func_globals, name=func.func_name,
+                        argdefs=func.func_defaults, closure=func.func_closure)
 
 
 def remove_excess_line_numbers(code):
-    # CPython < 2.7 and PyPy add excess SetLineno instructions in some places
-    # that break search of loops.
+    # CPython < 2.7 and PyPy add excess SetLineno instructions in some places.
+    # This breaks search of loops.
 
     excess_instructions_indexes = []
     cur_line_number = None
@@ -112,16 +105,15 @@ def remove_excess_line_numbers(code):
         code[index:index + 1] = []
 
 
-default_types = int, long
-default_iters_limit = 5000
-min_iters_limit = 2
+DEFAULT_TYPES = (int, long)
+DEFAULT_ITERS_LIMIT = 5000
+MIN_ITERS_LIMIT = 2
 
-def cpmoptimize(
-    strict=False, iters_limit=default_iters_limit, types=default_types,
-    opt_min_rows=True, opt_clear_stack=True,
-    verbose=False,
-):
-    iters_limit = max(iters_limit, min_iters_limit)
+
+def cpmoptimize(strict=False, iters_limit=DEFAULT_ITERS_LIMIT, types=DEFAULT_TYPES,
+                opt_min_rows=True, opt_clear_stack=True,
+                verbose=False):
+    iters_limit = max(iters_limit, MIN_ITERS_LIMIT)
     if not isinstance(verbose, bool):
         warnings.warn('Starting with cpmoptimize 0.3, "verbose" parameter '
                       'must be of type "bool" (now "logging" module is '
@@ -137,8 +129,8 @@ def cpmoptimize(
 
         if settings['verbose']:
             settings['logger'] = logging.LoggerAdapter(
-                    logging.getLogger(__name__),
-                    {'function_info': settings['function_info']})
+                logging.getLogger(__name__),
+                {'function_info': settings['function_info']})
 
         internals = byteplay.Code.from_code(func_code)
         code = internals.code

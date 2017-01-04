@@ -1,13 +1,12 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import dis
 import itertools
 import sys
 
-python_version = sys.version_info
+PYTHON_VERSION = sys.version_info
 
-if python_version < (2, 7):
+if PYTHON_VERSION < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
@@ -30,7 +29,12 @@ def dump_locals(dictionary):
     return tuple(sorted(dictionary.items(), key=lambda item: item[0]))
 
 
-def check_correctness(args=[], kwargs={}, strict=True, iters_limit=0):
+def check_correctness(args=None, kwargs=None, strict=True, iters_limit=0):
+    if args is None:
+        args = []
+    if kwargs is None:
+        kwargs = {}
+
     def decorator(func):
         def testcase_method(self):
             expected = func(*args, **kwargs)
@@ -267,7 +271,12 @@ class TestIntCalculations(unittest.TestCase):
         args=(0, xrange(LOOP_ITERATIONS)))(generalized_fib_func)
 
 
-def check_exception(exception, regexp, args=[], kwargs={}, iters_limit=0):
+def check_exception(exception, regexp, args=None, kwargs=None, iters_limit=0):
+    if args is None:
+        args = []
+    if kwargs is None:
+        kwargs = {}
+
     def decorator(func):
         def testcase_method(self):
             options_variants = itertools.product([False, True], repeat=2)

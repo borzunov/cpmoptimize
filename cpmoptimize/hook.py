@@ -3,17 +3,18 @@
 
 import sys
 
-python_version = sys.version_info
-
 import byteplay
 
 import run
 from matcode import *
 
 
+PYTHON_VERSION = sys.version_info
+
+
 class CPMRange(object):
     # Built-in xrange iterator in Python 2 doesn't support "long" type.
-    # This is replacement for it. All abilities of original xrange are
+    # This is a replacement for it. All abilities of original xrange are
     # saved (this implementation almost completely passes Python 2.7.8
     # xrange unit tests, see file "test_xranges.py").
 
@@ -41,7 +42,6 @@ class CPMRange(object):
             yield number
             number += self._step
 
-
     def __contains__(self, value):
         if value == self._start:
             return self._start != self._stop
@@ -53,7 +53,7 @@ class CPMRange(object):
 
     def __getitem__(self, key):
         if key < 0:
-            key = self.__len__() + key
+            key += self.__len__()
             if key < 0:
                 raise IndexError('index out of range')
             return self[key]
@@ -75,10 +75,7 @@ class CPMRange(object):
         return 'xrange(%s)' % ', '.join(map(str, args))
 
     def __reversed__(self):
-        return CPMRange(
-            self._stop - self._step, self._start - self._step,
-            -self._step,
-        )
+        return CPMRange(self._stop - self._step, self._start - self._step, -self._step)
 
 
 def check_iterable(settings, iterable):
@@ -99,6 +96,7 @@ def check_iterable(settings, iterable):
     last = iterable[-1]
     return start, step, iters_count, last
 
+
 def get_var_space(straight, globals_dict, locals_dict):
     arg_type, name = straight
     if arg_type == NAME:
@@ -111,7 +109,9 @@ def get_var_space(straight, globals_dict, locals_dict):
         return locals_dict
     return None
 
-var_undef_value = 0
+
+VAR_UNDEFINED_VALUE = 0
+
 
 def load_vars(settings, used_vars, globals_dict, locals_dict):
     vector = []
@@ -124,14 +124,12 @@ def load_vars(settings, used_vars, globals_dict, locals_dict):
             vector.append(value)
         except (TypeError, KeyError):
             check_value = False
-            vector.append(var_undef_value)
+            vector.append(VAR_UNDEFINED_VALUE)
 
         if check_value and not isinstance(value, settings['types']):
             allowed_types = ', '.join(map(repr, settings['types']))
-            raise TypeError((
-                'Variable "%s" has an unallowed type %s instead of ' +
-                'one of allowed types: %s'
-            ) % (name, type(value), allowed_types))
+            raise TypeError(('Variable "%s" has an unallowed type %s instead of ' +
+                             'one of allowed types: %s') % (name, type(value), allowed_types))
     return vector
 
 
@@ -153,10 +151,8 @@ def define_values(matcode, folded, params):
     return new_matcode
 
 
-def exec_loop(
-    iterable, settings, matcode, used_vars, real_vars_indexes,
-    need_store_counter, globals_dict, locals_dict, folded,
-):
+def exec_loop(iterable, settings, matcode, used_vars, real_vars_indexes,
+              need_store_counter, globals_dict, locals_dict, folded):
     try:
         # Check whether an iterable has type "xrange" and the required
         # number of iterations
@@ -230,7 +226,7 @@ def create_head_hook(state, loop_end_label):
         (byteplay.DUP_TOP, None),
         (byteplay.STORE_FAST, state.real_folded_arr),
     ]
-    if python_version < (2, 7):
+    if PYTHON_VERSION < (2, 7):
         for folded_code in state.consts:
             content += [
                 (byteplay.DUP_TOP, None),
@@ -256,7 +252,7 @@ def create_head_hook(state, loop_end_label):
     content += [
         (byteplay.COMPARE_OP, 'is not'),
     ]
-    if python_version < (2, 7):
+    if PYTHON_VERSION < (2, 7):
         content += [
             (byteplay.JUMP_IF_FALSE, head_end_label),
             (byteplay.POP_TOP, None),
@@ -275,7 +271,7 @@ def create_head_hook(state, loop_end_label):
     # Store changed variables
     for straight in unpacked_straight:
         content.append(
-            (vars_opers_map[straight[0]][1], straight[1])
+            (VARIABLE_OPERATION_MAP[straight[0]][1], straight[1])
         )
     # We need to pop the iterator because the loop will be skipped
     content += [
@@ -291,7 +287,7 @@ def create_head_hook(state, loop_end_label):
         (head_end_label, None),
         (byteplay.POP_TOP, None),
     ]
-    if python_version < (2, 7):
+    if PYTHON_VERSION < (2, 7):
         content += [
             (byteplay.POP_TOP, None),
         ]

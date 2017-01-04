@@ -6,7 +6,6 @@ import byteplay
 from matcode import *
 
 
-
 class RecompilationError(Exception):
     def __init__(self, message, state):
         self.message = "Can't optimize loop: %s" % message
@@ -110,7 +109,7 @@ class RecompilerState(object):
             if mutation:
                 unified = VAR, index
             else:
-                load_oper = vars_opers_map[var_type][0]
+                load_oper = VARIABLE_OPERATION_MAP[var_type][0]
                 unified = self.add_const((FOLD, [
                     (load_oper, straight[1]),
                 ]))
@@ -129,7 +128,7 @@ class RecompilerState(object):
         if arg_type == FOLD_TOS:
             return self.add_const(arg)
 
-        if arg_type not in vars_opers_map.keys() + [COUNTER, TOS]:
+        if arg_type not in VARIABLE_OPERATION_MAP.keys() + [COUNTER, TOS]:
             raise ValueError((
                 "Can't add variable from argument with type %s " +
                 "to matrix code"
@@ -153,12 +152,13 @@ class RecompilerState(object):
         self._vars_map[straight][1] = unified
 
 
-
 def handle_nop(state, instr):
     pass
 
+
 def handle_pop_top(state, instr):
     state.stack.pop()
+
 
 def create_rot(count):
     def handle_rot(state, instr):
@@ -183,6 +183,7 @@ def create_rot(count):
         )
     return handle_rot
 
+
 def create_dup(count):
     def handle_dup(state, instr):
         for index in xrange(count):
@@ -194,8 +195,10 @@ def create_dup(count):
         state.stack += state.stack[-count:]
     return handle_dup
 
+
 def handle_dup_topx(state, instr):
     create_dup(instr[1])(state, instr)
+
 
 def handle_unary_negative(state, instr):
     if state.stack[-1] is not None:
@@ -210,6 +213,7 @@ def handle_unary_negative(state, instr):
             state.append(
                 [MOV, (TOS, -1), (VALUE, 0)],
             )
+
 
 def handle_unary_const(state, instr):
     if state.stack[-1] is not None:
@@ -245,6 +249,7 @@ def handle_binary_multiply(state, instr):
             'Multiplication of two unpredictable values is unsupported'
         ), state)
 
+
 def handle_binary_add(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
         state.stack[-2] += state.stack[-1] + [instr]
@@ -277,6 +282,7 @@ def handle_binary_add(state, instr):
             )
 
         state.stack.pop()
+
 
 def handle_binary_subtract(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
@@ -312,6 +318,7 @@ def handle_binary_subtract(state, instr):
 
         state.stack.pop()
 
+
 def handle_binary_const(state, instr):
     if state.stack[-2] is not None and state.stack[-1] is not None:
         state.stack[-2] += state.stack[-1] + [instr]
@@ -330,9 +337,10 @@ def handle_load_const(state, instr):
         ) % (repr(arg), type(arg), allowed_types), state)
     state.stack.append([instr])
 
+
 def handle_load_var(state, instr):
     oper, name = instr
-    straight = vars_types_map[oper][0], name
+    straight = VARIABLE_TYPE_MAP[oper][0], name
     unified = state.load_var(straight)
     if unified[0] == CONST:
         state.stack.append([
@@ -347,9 +355,10 @@ def handle_load_var(state, instr):
 
         state.stack.append(None)
 
+
 def handle_store_var(state, instr):
     oper, name = instr
-    straight = vars_types_map[oper][0], name
+    straight = VARIABLE_TYPE_MAP[oper][0], name
     lines = state.stack[-1]
     if lines is not None:
         if (
@@ -379,8 +388,8 @@ def handle_store_var(state, instr):
     state.stack.pop()
 
 
-load_opers, store_opers = zip(*vars_opers_map.values())
-bytecode_handlers = [
+LOAD_OPERATIONS, STORE_OPERATIONS = zip(*VARIABLE_OPERATION_MAP.values())
+BYTECODE_HANDLERS = [
     (handle_nop, [byteplay.NOP]),
     (handle_pop_top, [byteplay.POP_TOP]),
     (create_rot(2), [byteplay.ROT_TWO]),
@@ -422,53 +431,53 @@ bytecode_handlers = [
 
     (handle_dup_topx, [byteplay.DUP_TOPX]),
     (handle_load_const, [byteplay.LOAD_CONST]),
-    (handle_load_var, load_opers),
-    (handle_store_var, store_opers),
+    (handle_load_var, LOAD_OPERATIONS),
+    (handle_store_var, STORE_OPERATIONS),
 ]
 
-supported_opers = {}
-for handler, opers in bytecode_handlers:
+SUPPORTED_OPERATIONS = {}
+for handler, opers in BYTECODE_HANDLERS:
     for oper in opers:
-        supported_opers[oper] = handler
-
+        SUPPORTED_OPERATIONS[oper] = handler
 
 
 def browse_vars(state, body):
     # Browse used in loop's body variables to determine their mutability
+
     for oper, arg in body:
         try:
-            arg_type, mutation = vars_types_map[oper]
+            arg_type, mutation = VARIABLE_TYPE_MAP[oper]
             state.add_var((arg_type, arg), mutation)
         except KeyError:
             pass
+
 
 def browse_counter(state, body):
     store_instr = body[0]
     oper, name = store_instr
     try:
-        arg_type, mutation = vars_types_map[oper]
+        arg_type, mutation = VARIABLE_TYPE_MAP[oper]
         if not mutation:
             raise KeyError
     except KeyError:
         raise RecompilationError((
             'Unsupported iterator usage in instruction %s' % repr(instr)
         ), state)
-    load_instr = vars_opers_map[arg_type][0], name
+    load_instr = VARIABLE_OPERATION_MAP[arg_type][0], name
 
     if state.settings['opt_min_rows']:
-        status = 'n' # Return 'n' if loop's counter isn't used
+        status = 'n'  # A loop counter was not used
         for index in xrange(1, len(body)):
             instr = body[index]
             if instr == store_instr:
-                status = 'w' # Return 'w' if counter
-                             # is changed at least once
+                status = 'w'  # The counter was changed at least once
                 break
             if instr == load_instr:
-                status = 'r' # Return 'r' if counter
-                             # isn't changed but was read at least once
+                status = 'r'  # The counter was not changed but was read at least once
     else:
         status = 'w'
     return (arg_type, name), status, body[1:]
+
 
 def recompile_body(settings, body):
     state = RecompilerState(settings)
@@ -517,20 +526,14 @@ def recompile_body(settings, body):
             continue
 
         try:
-            supported_opers[oper](state, instr)
+            SUPPORTED_OPERATIONS[oper](state, instr)
         except UnpredictableArgsError:
-            raise RecompilationError((
-                'All operands of instruction %s must be a constant ' +
-                'or must have a predictable value'
-            ) % oper, state)
+            raise RecompilationError(('All operands of instruction %s must be a constant ' +
+                                      'or must have a predictable value') % oper, state)
         except IndexError:
-            raise RecompilationError((
-                'Unsupported loop type or invalid stack usage in bytecode'
-            ), state)
+            raise RecompilationError('Unsupported loop type or invalid stack usage in bytecode', state)
         except KeyError:
-            raise RecompilationError((
-                'Unsupported instruction %s'
-            ) % repr(instr), state)
+            raise RecompilationError('Unsupported instruction %s' % repr(instr), state)
 
     if counter_status != 'n':
         state.append(

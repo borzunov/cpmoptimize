@@ -18,11 +18,13 @@ def handle_mov(table, dest, src):
     else:
         table[src[1]][dest[1]] = 1
 
+
 def handle_add(table, dest, src):
     if src[0] == VALUE:
         table[-1][dest[1]] = src[1]
     else:
         table[src[1]][dest[1]] = 1
+
 
 def handle_sub(table, dest, src):
     if src[0] == VALUE:
@@ -30,13 +32,15 @@ def handle_sub(table, dest, src):
     else:
         table[src[1]][dest[1]] = -1
 
+
 def handle_mul(table, dest, src):
     if src[0] == VALUE:
         table[dest[1]][dest[1]] = src[1]
     else:
         raise InvalidMatcodeError
 
-matcode_map = {
+
+MATCODE_MAP = {
     MOV: handle_mov,
     ADD: handle_add,
     SUB: handle_sub,
@@ -84,6 +88,7 @@ def skip_rows(mat):
         lite_content.append(row)
     return Matrix(lite_content), unskipped_indexes, fix_mat
 
+
 def restore_rows(lite_mat, unskipped_indexes, fix_mat):
     mat = Matrix.identity(fix_mat.rows)
     for y, row in izip(unskipped_indexes, lite_mat.content):
@@ -118,7 +123,7 @@ def run_loop(settings, matcode, index, vector_len):
                 if len(instr) != 3 or instr[1][0] != VAR:
                     raise InvalidMatcodeError
                 cur_mat = Matrix.identity(vector_len)
-                matcode_map[oper](cur_mat.content, instr[1], instr[2])
+                MATCODE_MAP[oper](cur_mat.content, instr[1], instr[2])
         except InvalidMatcodeError as err:
             if err.args:
                 raise err

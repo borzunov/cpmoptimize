@@ -15,7 +15,8 @@ from cpmoptimize import cpmoptimize
 support_plots = None
 
 # Directory where plots will be saved
-plots_dir = 'plots'
+PLOTS_DIR = 'plots'
+
 
 def init_plots():
     global plt, support_plots
@@ -36,19 +37,21 @@ def init_plots():
 
     # If plots are supported, make directory for saving images
     try:
-        os.makedirs(plots_dir)
-        print '[+] Created directory "%s"' % plots_dir
+        os.makedirs(PLOTS_DIR)
+        print '[+] Created directory "%s"' % PLOTS_DIR
     except OSError:
         # If directory already exists, do nothing
         pass
 
+
 # Plots' size (in inches)
-linear_plots_size = 6, 4
-other_plots_size = 5, 5
+LINEAR_PLOT_SIZE = 6, 4
+OTHER_PLOT_SIZE = 5, 5
 
 # Font size for plots
-lable_fontsize = 11
-normal_fontsize = 9
+LABEL_FONT_SIZE = 11
+NORMAL_FONT_SIZE = 9
+
 
 def make_plot(filename, title, arguments, methods, scale):
     if not support_plots:
@@ -56,51 +59,39 @@ def make_plot(filename, title, arguments, methods, scale):
 
     is_linear = (scale == 'linear')
 
-    # Create new plot with specified size
-    plot_size = linear_plots_size if is_linear else other_plots_size
+    plot_size = LINEAR_PLOT_SIZE if is_linear else OTHER_PLOT_SIZE
     plt.figure(figsize=plot_size)
 
     for name, func, measures in methods:
-        # For every sequence draw it on the plot. Specify markers'
-        # style (circles with specified size) and add record about this
-        # sequence to the legend of the plot.
         plt.plot(arguments, measures, 'o-', label=name, markersize=3)
 
     if is_linear:
-        # Define that both axes always starts from zero
         axis = plt.axis()
         plt.axis((0, axis[1], 0, axis[3]))
 
-    # Specify scale type (linear or logarithmical)
     plt.xscale(scale)
     plt.yscale(scale)
 
-    # Specify font for axes' ticks
-    plt.xticks(fontsize=normal_fontsize)
-    plt.yticks(fontsize=normal_fontsize)
+    plt.xticks(fontsize=NORMAL_FONT_SIZE)
+    plt.yticks(fontsize=NORMAL_FONT_SIZE)
 
-    # Enable grid in the background
     plt.grid(True)
 
-    # Specify plot's title, axes' labels and legend block location.
-    # Also specify font size for text elements above.
-    plt.title(title, fontsize=lable_fontsize)
-    plt.xlabel('Argument', fontsize=normal_fontsize)
-    plt.ylabel('Time (seconds)', fontsize=normal_fontsize)
-    plt.legend(loc='upper left', fontsize=normal_fontsize)
+    plt.title(title, fontsize=LABEL_FONT_SIZE)
+    plt.xlabel('Argument', fontsize=NORMAL_FONT_SIZE)
+    plt.ylabel('Time (seconds)', fontsize=NORMAL_FONT_SIZE)
+    plt.legend(loc='upper left', fontsize=NORMAL_FONT_SIZE)
 
-    # Fix paddings in the plot
     plt.tight_layout(0.2)
 
-    # Save plot to the specified file
-    path = os.path.join(plots_dir, filename)
+    path = os.path.join(PLOTS_DIR, filename)
     plt.savefig(path)
     print '[*] Saved plot "%s"' % path
 
 
-# Class for formatting simple tables in console output
-
 class Table(object):
+    # Class for formatting simple tables in console output
+
     def __init__(self, cols):
         # "cols" must be a list of pairs of column name (it will be
         # used in table's head) and column width. Columns' values in
@@ -174,8 +165,6 @@ class Table(object):
             )
 
 
-# Function for measuring time of function running
-
 def measure_time(func, arg):
     start = time()
     data = func(arg)
@@ -185,9 +174,11 @@ def measure_time(func, arg):
 
 # Functions for easy generating arguments case
 
+
 def linear_scale(max_value, count):
     base = max_value / count
     return [base * i for i in xrange(count + 1)]
+
 
 def log_scale(max_value, count):
     log_base = math.log(max_value) / count
@@ -197,18 +188,17 @@ def log_scale(max_value, count):
     return res
 
 
-# Function for running testcase
-
 # Table's columns widths
-arg_col_width = 6
-control_col_width = 8
-compared_col_width = 12
-compare_comment_width = 8
-match_col_width = 5
+ARG_COL_WIDTH = 6
+CONTROL_COL_WIDTH = 8
+COMPARED_COL_WIDTH = 12
+COMPARED_COMMENT_WIDTH = 8
+MATCH_COL_WIDTH = 5
 
 # If argument of functions is lesser or equal this value, comparison of
 # execution time of different implementations will not be executed
-compare_arg_border = 0
+COMPARE_ARG_BORDER = 0
+
 
 def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
     if draw_plot:
@@ -219,13 +209,13 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
     title = 'Function "%s"%s:\n' % (name, comment)
     print title
 
-    cols = [('arg', arg_col_width)]
+    cols = [('arg', ARG_COL_WIDTH)]
     methods = []
     for index, (desc, func) in enumerate(functions):
-        width = compared_col_width if index else control_col_width
+        width = COMPARED_COL_WIDTH if index else CONTROL_COL_WIDTH
         cols.append(('%s, s' % desc, width))
         methods.append([desc, func, None])
-    cols.append(('match', match_col_width))
+    cols.append(('match', MATCH_COL_WIDTH))
 
     for case_desc, plot_type, arguments in cases:
         if case_desc is not None:
@@ -249,12 +239,12 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
                 cur_time, data = measure_time(func, arg)
                 cell = '%.2lf' % cur_time
                 if exec_compare and prev_time is not None:
-                    if arg > compare_arg_border:
+                    if arg > COMPARE_ARG_BORDER:
                         ratio = float(prev_time) / cur_time
                         comment = ' (%.1lfx)' % ratio
                     else:
                         comment = ''
-                    cell += comment.rjust(compare_comment_width)
+                    cell += comment.rjust(COMPARED_COMMENT_WIDTH)
                 prev_time = cur_time
                 table.append(cell)
                 measures.append(cur_time)
@@ -275,6 +265,7 @@ def run(name, comment, functions, cases, exec_compare=True, draw_plot=True):
 
 # Functions for generate optimized variants of naive methods
 
+
 def apply_options(settings, naive_func, clear_stack, min_rows):
     name = 'cpm'
     if not clear_stack or not min_rows:
@@ -284,20 +275,18 @@ def apply_options(settings, naive_func, clear_stack, min_rows):
     if not min_rows:
         name += 'm'
 
-    return (name, cpmoptimize(
-        opt_clear_stack=clear_stack, opt_min_rows=min_rows, **settings
-    )(naive_func))
+    return (name,
+            cpmoptimize(opt_clear_stack=clear_stack,
+                        opt_min_rows=min_rows, **settings)(naive_func))
+
 
 def optimized(naive_func, iters_limit=0, try_options=False):
     settings = {'strict': True, 'iters_limit': iters_limit}
-    functions = [
-        ('naive', naive_func),
-    ]
+    functions = [('naive', naive_func)]
     if try_options:
         functions += [
             apply_options(settings, naive_func, False, False),
             apply_options(settings, naive_func, False, True),
-            apply_options(settings, naive_func, True, False),
-        ]
+            apply_options(settings, naive_func, True, False)]
     functions.append(apply_options(settings, naive_func, True, True))
     return functions
