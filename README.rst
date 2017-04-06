@@ -11,8 +11,10 @@ A decorator for automatic algorithms optimization via fast matrix exponentiation
     :target: https://pypi.python.org/pypi/cpmoptimize
 
 .. image:: https://img.shields.io/pypi/pyversions/cpmoptimize.svg
+    :target: https://pypi.python.org/pypi/cpmoptimize
 
 .. image:: https://img.shields.io/pypi/implementation/cpmoptimize.svg
+    :target: https://pypi.python.org/pypi/cpmoptimize
 
 Installation
 ------------
