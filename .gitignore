@@ -8,3 +8,7 @@ dist
 .coverage
 
 plots
+
+.idea
+venv
+build

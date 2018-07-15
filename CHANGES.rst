@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.4
+-----------
+
+Date: *2018-07-15*
+
+- Show possible reasons of popular errors
+- Use ``strict=True`` by default
+
 Version 0.3
 -----------
 
