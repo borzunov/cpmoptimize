@@ -81,8 +81,8 @@ class CPMRange(object):
 def check_iterable(settings, iterable):
     if not isinstance(iterable, (xrange, CPMRange)):
         raise TypeError(
-            'Iterator has type %s instead of type "xrange"' % type(iterable)
-        )
+            'Iterator has type `%s` instead of type `xrange`. '
+            'Please use `xrange` instead of `range`.' % type(iterable))
 
     iters_count = iterable.__len__()
     if iters_count <= settings['iters_limit']:

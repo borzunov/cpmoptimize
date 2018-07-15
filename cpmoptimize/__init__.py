@@ -110,14 +110,13 @@ DEFAULT_ITERS_LIMIT = 5000
 MIN_ITERS_LIMIT = 2
 
 
-def cpmoptimize(strict=False, iters_limit=DEFAULT_ITERS_LIMIT, types=DEFAULT_TYPES,
+def cpmoptimize(strict=True, iters_limit=DEFAULT_ITERS_LIMIT, types=DEFAULT_TYPES,
                 opt_min_rows=True, opt_clear_stack=True,
                 verbose=False):
+    if not isinstance(strict, bool):
+        raise TypeError('`strict` argument must be of type bool. '
+                        'Please write "@cpmoptimize()" instead of "@cpmoptimize".')
     iters_limit = max(iters_limit, MIN_ITERS_LIMIT)
-    if not isinstance(verbose, bool):
-        warnings.warn('Starting with cpmoptimize 0.3, "verbose" parameter '
-                      'must be of type "bool" (now "logging" module is '
-                      'always used for debug messages)')
     params = locals()
 
     def upgrade_func(func):
