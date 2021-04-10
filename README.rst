@@ -16,19 +16,8 @@ A decorator for automatic algorithms optimization via fast matrix exponentiation
 .. image:: https://img.shields.io/pypi/implementation/cpmoptimize.svg
     :target: https://pypi.python.org/pypi/cpmoptimize
 
-Installation
-------------
-
-You can install the stable version of the library using pip::
-
-    sudo pip install cpmoptimize
-
-Or install a previously downloaded and extracted package::
-
-    sudo python setup.py install
-
-Basic Example
--------------
+Example
+-------
 
 Suppose we want to calculate the ten millionth `Fibonacci number`_ using a program in Python. The function with a trivial algorithm is rather slow:
 
@@ -82,6 +71,17 @@ A detailed description of the library (including an idea explanation and an inte
 
 .. _English: http://kukuruku.co/hub/algorithms/automatic-algorithms-optimization-via-fast-matrix-exponentiation
 .. _Russian: http://habrahabr.ru/post/236689/
+
+Installation
+------------
+
+You can install the stable version of the library using pip::
+
+    sudo pip install cpmoptimize
+
+Or install a previously downloaded and extracted package::
+
+    sudo python setup.py install
 
 Author
 ------
