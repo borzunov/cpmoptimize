@@ -2,8 +2,6 @@
 cpmoptimize
 ===========
 
-A decorator for automatic algorithms optimization via fast matrix exponentiation
-
 .. image:: https://img.shields.io/travis/borzunov/cpmoptimize/master.svg
     :target: https://travis-ci.org/borzunov/cpmoptimize
 
@@ -19,7 +17,9 @@ A decorator for automatic algorithms optimization via fast matrix exponentiation
 Description
 -----------
 
-The decorator disassembles the function's bytecode and tries to reduce the algorithm's time complexity using the fast matrix exponentiation.
+This library provides a decorator that disassembles the function's bytecode, checks if it calculates linear recurrences, and tries to reduce the algorithm's time complexity from O(n) to O(log n) using the `fast matrix exponentiation`_.
+
+.. _fast matrix exponentiation: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
 
 **Detailed description:** Russian_, English_.
 
@@ -34,7 +34,7 @@ Inspired by the `Alexander Skidanov`_'s `optimizing interpreter`_.
 Example
 -------
 
-Suppose we want to calculate the ten millionth `Fibonacci number`_ using a program in Python. The function with a trivial algorithm is rather slow:
+Suppose we want to calculate the ten millionth `Fibonacci number`_ in Python. The function with a trivial algorithm is rather slow:
 
 .. code:: python
 
