@@ -16,6 +16,21 @@ A decorator for automatic algorithms optimization via fast matrix exponentiation
 .. image:: https://img.shields.io/pypi/implementation/cpmoptimize.svg
     :target: https://pypi.python.org/pypi/cpmoptimize
 
+Description
+-----------
+
+The decorator disassembles the function's bytecode and tries to reduce the algorithm's time complexity using the fast matrix exponentiation.
+
+**Detailed description:** Russian_, English_.
+
+.. _English: http://kukuruku.co/hub/algorithms/automatic-algorithms-optimization-via-fast-matrix-exponentiation
+.. _Russian: http://habrahabr.ru/post/236689/
+
+Inspired by the `Alexander Skidanov`_'s `optimizing interpreter`_.
+
+.. _Alexander Skidanov: https://github.com/SkidanovAlex
+.. _optimizing interpreter: https://github.com/SkidanovAlex/interpreter
+
 Example
 -------
 
@@ -53,24 +68,6 @@ But if we apply the optimizing decorator, the function will give you the answer 
     # Time: 18 sec (85x faster)
 
 .. _Fibonacci number: https://en.wikipedia.org/wiki/Fibonacci_number
-
-Description
------------
-
-Actually, the decorator disassembles bytecode of a function using pretty ``byteplay`` library, analyzes the code, and tries to reduce `time complexity`_ of the algorithm used in it using `fast matrix exponentiation`_.
-
-.. _time complexity: https://en.wikipedia.org/wiki/Time_complexity
-.. _fast matrix exponentiation: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
-
-The decorator uses a method implemented by `Alexander Skidanov`_ in his simple `optimizing interpreter`_.
-
-.. _Alexander Skidanov: https://github.com/SkidanovAlex
-.. _optimizing interpreter: https://github.com/SkidanovAlex/interpreter
-
-A detailed description of the library (including an idea explanation and an interface reference) is available in English_ and Russian_.
-
-.. _English: http://kukuruku.co/hub/algorithms/automatic-algorithms-optimization-via-fast-matrix-exponentiation
-.. _Russian: http://habrahabr.ru/post/236689/
 
 Installation
 ------------
