@@ -2,10 +2,7 @@
 cpmoptimize
 ===========
 
-.. image:: https://img.shields.io/travis/borzunov/cpmoptimize/master.svg
-    :target: https://travis-ci.org/borzunov/cpmoptimize
-
-.. image:: https://img.shields.io/pypi/v/cpmoptimize.svg
+.. image:: https://img.shields.io/pypi/v/cpmoptimize.svg?color=blue
     :target: https://pypi.python.org/pypi/cpmoptimize
 
 .. image:: https://img.shields.io/pypi/pyversions/cpmoptimize.svg
