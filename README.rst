@@ -28,6 +28,8 @@ Inspired by the `Alexander Skidanov`_'s `optimizing interpreter`_.
 .. _Alexander Skidanov: https://github.com/SkidanovAlex
 .. _optimizing interpreter: https://github.com/SkidanovAlex/interpreter
 
+**Update (Feb 2022):** This library was created in 2014 and only supports Python 2.6-2.7 (not Python 3). I don't plan to upgrade it myself but I'd be happy to help anyone willing to do that (this is a good exercise to understand how it works). If you're interested, please open an issue.
+
 Example
 -------
 
